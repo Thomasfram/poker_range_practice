@@ -1,0 +1,129 @@
+{
+    "LJ": {
+        "open": {
+            "50bb": "22+, A2s+, K9s+, Q9s+, J9s+, T9s, 98s, 87s, 76s, 65s, AJo+, KQo"
+        },
+        "4bet vs HJ": {
+            "50bb": "JJ+, AQs+, AKo, A5s"
+        },
+        "4bet vs CO": {
+            "50bb": "JJ+, AQs+, AKo, A5s"
+        },
+        "4bet vs BTN": {
+            "50bb": "JJ+, AQs+, AKo, A5s"
+        },
+        "4bet vs SB": {
+            "50bb": "JJ+, AQs+, AKo, A5s"
+        },
+        "4bet vs BB": {
+            "50bb": "JJ+, AQs+, AKo, A5s"
+        }
+    },
+    "HJ": {
+        "open": {
+            "50bb": "22+, A2s+, K6s+, Q8s+, J8s+, T8s+, 97s+, 87s, 76s, 65s, ATo+, KQo"
+        },
+        "3bet vs LJ": {
+            "50bb": "KK+, AKs, AKo, A5s, A4s"
+        },
+        "4bet vs CO": {
+            "50bb": "JJ+, AQs+, AKo, A5s, A4s, KQs"
+        },
+        "4bet vs BTN": {
+            "50bb": "TT+, AQs+, AKo, A5s, A4s, A3s, KQs"
+        },
+        "4bet vs SB": {
+            "50bb": "TT+, AQs+, AKo, A5s, A4s, A3s, KQs"
+        },
+        "4bet vs BB": {
+            "50bb": "TT+, AQs+, AKo, A5s, A4s, A3s, KQs"
+        }
+    },
+    "CO": {
+        "open": {
+            "50bb": "22+, A2s+, K2s+, Q6s+, J7s+, T7s+, 97s+, 86s+, 75s+, 65s, 54s, A9o+, KJo+, QJo, JTo"
+        },
+        "3bet vs LJ": {
+            "50bb": "KK+, AKs, AKo, A5s"
+        },
+        "3bet vs HJ": {
+            "50bb": "JJ+, AQs+, AKo, A5s-A2s, 76s, 65s"
+        },
+        "4bet vs BTN": {
+            "50bb": "TT+, AQs+, AKo, A5s-A3s, KQs, QJs"
+        },
+        "4bet vs SB": {
+            "50bb": "TT+, AQs+, AKo, A5s-A3s, KQs, QJs"
+        },
+        "4bet vs BB": {
+            "50bb": "TT+, AQs+, AKo, A5s-A3s, KQs, QJs"
+        }
+    },
+    "BTN": {
+        "open": {
+            "50bb": "22+, A2s+, K2s+, Q2s+, J3s+, T5s+, 95s+, 85s+, 75s+, 64s+, 54s+, A2o+, K8o+, Q8o+, J8o+, T8o+, 98o",
+            "25bb": "33+, A2s+, K2s+, Q4s+, J5s+, T6s+, 96s+, 86s+, 75s+, 65s+, 54s+, A4o+, K8o+, Q8o+, J9o+, T9o+"
+        },
+        "3bet vs LJ": {
+            "50bb": "QQ+, AKs, AKo, A5s, A4s"
+        },
+        "3bet vs HJ": {
+            "50bb": "JJ+, AQs+, AKo, A5s-A3s, 76s, 65s"
+        },
+        "3bet vs CO": {
+            "50bb": "TT+, AJs+, KQs, AQo+, A5s-A2s, K9s-K8s, Q9s, J9s, T8s, 97s, 87s, 76s, 65s, 54s"
+        },
+        "4bet vs SB": {
+            "50bb": "TT+, AQs+, AKo, A5s-A2s, KQs"
+        },
+        "4bet vs BB": {
+            "50bb": "TT+, AQs+, AKo, A5s-A3s, KQs"
+        }
+    },
+    "SB": {
+        "open": {
+            "50bb": "88+, A4s+, K7s+, Q9s+, J9s+, T8s+, 98s+, A9o+, KTo+, QJo+, JTo, 65s, 54s, J2s, J3s, T2s, T3s, K6o, 6o, K5o, Q5o"
+        },
+        "limp": {
+            "50bb": "A2s-A3s, 77-22, K6s-K2s, Q8s-Q2s, J8s-J4s, T7s-T4s, 97s-92s, 87s-82s, 76s-73s, 64s-63s, 53s-52s, 43s-42s, 32s, A8o-A2o, K9o-K7o, K4o-K2o, QTo-Q7o, Q4o-Q3o, JTo-J5o, T9o-T6o, 98o-96o, 87o-86o, 76o, 65o, 54o"
+        },
+        "3bet vs LJ": {
+            "50bb": "JJ+, AQs+, AKo"
+        },
+        "3bet vs HJ": {
+            "50bb": "TT+, AQs+, AKo"
+        },
+        "3bet vs CO": {
+            "50bb": "99+, AJs+, KQs, AQo+"
+        },
+        "3bet vs BTN": {
+            "50bb": "88+, ATs+, KJs+, QJs, JTs, AJo+, KQo"
+        },
+        "limp_reraise vs BB": {
+            "50bb": "QQ+, AKs, AKo, A5s, A4s, K7s"
+        },
+        "4bet vs BB": {
+            "50bb": "TT+, AQs+, AKo, A5s, K5s, Q5s"
+        }
+    },
+    "BB": {
+        "3bet vs LJ": {
+            "50bb": "QQ+, AKs, AKo, A5s"
+        },
+        "3bet vs HJ": {
+            "50bb": "JJ+, AQs+, AKo, A5s, A4s"
+        },
+        "3bet vs CO": {
+            "50bb": "TT+, AJs+, KQs, AQo+, A5s-A3s, K9s"
+        },
+        "3bet vs BTN": {
+            "50bb": "88+, ATs+, KJs+, QJs, JTs, AJo+, KQo, A5s-A2s, K6s-K5s, 87s, 76s, 65s, 54s"
+        },
+        "3bet vs SB": {
+            "50bb": "99+, AJs+, KQs, AQo+, A5s-A2s, 87s, 76s, 65s"
+        },
+        "3bet vs Limp SB": {
+            "50bb": "TT+, AJs+, KJs+, AQo+"
+        }
+    }
+}

@@ -1,0 +1,23 @@
+[project]
+name = "poker-range-practice"
+version = "0.1.0"
+description = "A poker range practice tool with web interface"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+dependencies = [
+    "flask>=3.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/poker_range_practice"]
+
+[project.scripts]
+poker-practice = "poker_range_practice.__init__:main"
