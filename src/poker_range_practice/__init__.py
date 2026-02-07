@@ -64,6 +64,9 @@ def create_app():
         if current_range is None:
             return jsonify({'error': 'Range not found'}), 404
         
+        # Get available actions for this specific range
+        range_actions = range_manager.get_available_range_actions(position, action, stack_depth)
+        
         # Store in session
         session['config'] = {
             'position': position,
@@ -73,7 +76,8 @@ def create_app():
         
         return jsonify({
             'success': True,
-            'range_size': len(current_range)
+            'range_size': len(current_range),
+            'available_actions': range_actions
         })
 
     @app.route('/api/next-hand', methods=['GET'])
@@ -99,37 +103,54 @@ def create_app():
         if not hand_str:
             return jsonify({'error': 'No hand provided'}), 400
 
-        user_says_in_range = data.get('in_range', "not answered yet")
+        # User's selected action (e.g. "3bet", "call", "fold", "in_range")
+        user_action = data.get('action')
         
         hand = Hand(hand_str)
-        actually_in_range = hand in current_range
         
-        is_correct = user_says_in_range == actually_in_range
+        # Determine actual action for this hand
+        # current_range is now a dict: {Hand: ActionString}
+        actual_action = current_range.get(hand, "fold")
+        
+        is_correct = (user_action == actual_action)
         
         response = {
             'correct': is_correct,
-            'actually_in_range': actually_in_range
+            'actual_action': actual_action,
+            'user_action': user_action
         }
         
-        # If incorrect and hand is not in range, find closest hand
-        if not is_correct and not actually_in_range:
-            closest = find_closest_hand_in_range(hand, current_range)
-            if closest:
-                response['closest_hand'] = str(closest)
-                response['closest_type'] = 'in_range'
-                
-        # If correct, show bottom of range
-        elif is_correct:
-            if actually_in_range:
-                # Correctly identified IN range -> show lowest hand IN range
-                bottom = find_bottom_of_range_category(hand, current_range)
-                if bottom:
-                    response['bottom_of_range'] = str(bottom)
-            else:
-                # Correctly identified OUT of range (fold) -> show lowest hand IN range (the boundary)
-                closest = find_closest_hand_in_range(hand, current_range)
+        # If incorrect
+        if not is_correct:
+            # If actual valid action is NOT "fold", find closest hand with THAT action?
+            # Or just find closest hand in general "in range" (non-fold)?
+            
+            # Logic: If hand should be folded, but user picked action -> Show closest valid hand for that action?
+            # Or if hand should be action X, but user picked action Y...
+            
+            # Simplified "closest" logic for now:
+            # If actual is "fold", find closest non-fold hand
+            if actual_action == "fold":
+                # Find closest hand that is present in the range (any action)
+                # Create set of hands from dict keys
+                range_hands = set(current_range.keys())
+                closest = find_closest_hand_in_range(hand, range_hands)
                 if closest:
-                    response['bottom_of_range'] = str(closest)
+                    response['closest_hand'] = str(closest)
+                    closest_action = current_range.get(closest)
+                    # response['closest_type'] = closest_action # Optional info
+            else:
+                 # Actual is some active action.
+                 # If user picked "fold", show bottom of that specific action range?
+                pass
+
+        # If correct and NOT fold, show bottom of range for that action
+        if is_correct and actual_action != "fold":
+             # Filter range to only hands with this action
+             specific_range_hands = [h for h, act in current_range.items() if act == actual_action]
+             bottom = find_bottom_of_range_category(hand, specific_range_hands)
+             if bottom:
+                response['bottom_of_range'] = str(bottom)
         
         return jsonify(response)
     

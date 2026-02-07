@@ -32,11 +32,34 @@ class RangeManager:
     def get_range(self, position, action, stack_depth="standard"):
         """
         Get a range for given position, action, and stack depth.
-        Returns a set of Hand objects, or None if not found.
+        Returns a dictionary mapping Hand objects to action strings (e.g. "call", "3bet").
+        For simple ranges, returns {"in_range": "range"} (or similar default).
+        Returns None if not found.
         """
         try:
-            range_str = self.ranges[position][action][stack_depth]
-            return parse_range_notation(range_str)
+            range_data = self.ranges[position][action][stack_depth]
+            
+            # Case 1: Simple string range (Binary: In Range vs Fold)
+            if isinstance(range_data, str):
+                hands = parse_range_notation(range_data)
+                # Map all hands to a default "in_range" action
+                return {hand: "in_range" for hand in hands}
+            
+            # Case 2: Complex dict range (Multi-action: 3bet, call, etc)
+            elif isinstance(range_data, dict):
+                full_range = {}
+                for sub_action, sub_range_str in range_data.items():
+                    hands = parse_range_notation(sub_range_str)
+                    for hand in hands:
+                        # If a hand is in multiple sub-ranges (which shouldn't happen ideally),
+                        # the last one overwrites. Future: handle mixed strategies.
+                        full_range[hand] = sub_action
+                return full_range
+                
+            else:
+                print(f"Unknown range data type: {type(range_data)}")
+                return None
+
         except KeyError:
             return None
     
@@ -55,6 +78,23 @@ class RangeManager:
         if position not in self.ranges or action not in self.ranges[position]:
             return []
         return list(self.ranges[position][action].keys())
+
+    def get_available_range_actions(self, position, action, stack_depth):
+        """
+        Get the specific actions available in a range (e.g. ['3bet', 'call', 'fold']).
+        Returns a list of action strings.
+        Always includes 'fold' (implicitly).
+        """
+        try:
+            range_data = self.ranges[position][action][stack_depth]
+            
+            if isinstance(range_data, str):
+                return ["in_range"]
+            elif isinstance(range_data, dict):
+                return list(range_data.keys())
+            return []
+        except KeyError:
+            return []
 
 
 if __name__ == "__main__":

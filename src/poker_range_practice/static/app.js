@@ -7,7 +7,8 @@ let stats = {
 let currentConfig = {
     position: null,
     action: null,
-    stackDepth: null
+    stackDepth: null,
+    availableActions: []
 };
 
 let currentHand = null;
@@ -21,8 +22,7 @@ const stackDepthSelect = document.getElementById('stack-depth');
 const startBtn = document.getElementById('start-btn');
 const currentHandDisplay = document.getElementById('current-hand');
 const configDisplay = document.getElementById('config-display');
-const inRangeBtn = document.getElementById('in-range-btn');
-const foldBtn = document.getElementById('fold-btn');
+const buttonGroup = document.querySelector('.button-group'); // Container for buttons
 const backBtn = document.getElementById('back-btn');
 const nextBtn = document.getElementById('next-btn');
 const feedbackDiv = document.getElementById('feedback');
@@ -38,8 +38,7 @@ function setupEventListeners() {
     actionSelect.addEventListener('change', onActionChange);
     stackDepthSelect.addEventListener('change', onStackDepthChange);
     startBtn.addEventListener('click', startPractice);
-    inRangeBtn.addEventListener('click', () => submitAnswer(true));
-    foldBtn.addEventListener('click', () => submitAnswer(false));
+    // Dynamic buttons handle their own events
     nextBtn.addEventListener('click', loadNextHand);
     backBtn.addEventListener('click', backToMenu);
 }
@@ -139,6 +138,10 @@ async function startPractice() {
 
         if (data.success) {
             configDisplay.textContent = `${currentConfig.position} - ${currentConfig.action} - ${currentConfig.stackDepth} (${data.range_size} hands)`;
+            currentConfig.availableActions = data.available_actions || ['in_range'];
+
+            setupActionButtons();
+
             configScreen.classList.remove('active');
             practiceScreen.classList.add('active');
             loadNextHand();
@@ -148,11 +151,63 @@ async function startPractice() {
     }
 }
 
+function setupActionButtons() {
+    buttonGroup.innerHTML = ''; // Clear existing
+
+    // Always add "Fold" button later, or as part of actions logic?
+    // Start API returns "Active" actions (e.g. 3bet, call). "Fold" is implicit fallback.
+    // We should explicitly add a Fold button.
+
+    // Sort actions?
+    const actions = [...currentConfig.availableActions];
+
+    // Create buttons for active actions
+    actions.forEach(action => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-large action-btn';
+        // Style specific actions if needed
+        if (action === 'in_range') {
+            btn.textContent = '✓ In Range';
+            btn.classList.add('btn-success');
+        } else if (action === '3bet') {
+            btn.textContent = '3-Bet';
+            btn.style.backgroundColor = '#d9534f'; // Example red
+            btn.style.color = 'white';
+        } else if (action === 'call') {
+            btn.textContent = 'Call';
+            btn.style.backgroundColor = '#5bc0de'; // Example blue
+            btn.style.color = 'white';
+        } else if (action === '3bet_l') {
+            btn.textContent = '3-Bet (L)'; // Low freq? Linear?
+            btn.style.backgroundColor = '#f0ad4e'; // Example orange
+            btn.style.color = 'white';
+        } else {
+            btn.textContent = action;
+            btn.classList.add('btn-secondary');
+        }
+
+        btn.dataset.action = action;
+        btn.addEventListener('click', () => submitAnswer(action));
+        buttonGroup.appendChild(btn);
+    });
+
+    // Always add Fold button last
+    const foldBtn = document.createElement('button');
+    foldBtn.className = 'btn btn-danger btn-large action-btn';
+    foldBtn.textContent = '✗ Fold';
+    foldBtn.dataset.action = 'fold';
+    foldBtn.addEventListener('click', () => submitAnswer('fold'));
+    buttonGroup.appendChild(foldBtn);
+}
+
+
 async function loadNextHand() {
     feedbackDiv.classList.add('hidden');
     nextBtn.style.display = 'none';
-    inRangeBtn.disabled = true;
-    foldBtn.disabled = true;
+
+    // Enable all action buttons
+    const btns = document.querySelectorAll('.action-btn');
+    btns.forEach(btn => btn.disabled = false);
 
     try {
         const response = await fetch('/api/next-hand');
@@ -166,18 +221,17 @@ async function loadNextHand() {
         currentHand = data.hand;
         currentHandDisplay.textContent = currentHand;
 
-        inRangeBtn.disabled = false;
-        foldBtn.disabled = false;
     } catch (error) {
         console.error('Error loading next hand:', error);
     }
 }
 
-async function submitAnswer(inRange) {
-    inRangeBtn.disabled = true;
-    foldBtn.disabled = true;
+async function submitAnswer(action) {
+    // Disable buttons
+    const btns = document.querySelectorAll('.action-btn');
+    btns.forEach(btn => btn.disabled = true);
 
-    console.log('Submitting answer:', { hand: currentHand, in_range: inRange });
+    console.log('Submitting answer:', { hand: currentHand, action: action });
 
     try {
         const response = await fetch('/api/check-answer', {
@@ -187,7 +241,7 @@ async function submitAnswer(inRange) {
             },
             body: JSON.stringify({
                 hand: currentHand,
-                in_range: inRange
+                action: action
             })
         });
 
@@ -218,9 +272,15 @@ function showFeedback(data) {
         feedbackDiv.classList.add('correct');
         let html = '<div class="feedback-title">✓ CORRECT!</div>';
 
+        if (data.user_action === "fold") {
+            html += `<div class="feedback-detail">Correct fold.</div>`;
+        } else {
+            html += `<div class="feedback-detail">Yes, it is ${data.user_action}.</div>`;
+        }
+
         // Show bottom of range if available
         if (data.bottom_of_range) {
-            html += `<div class="feedback-detail">Bottom of range: <strong>${data.bottom_of_range}</strong></div>`;
+            html += `<div class="feedback-detail">Bottom of ${data.actual_action} range: <strong>${data.bottom_of_range}</strong></div>`;
         }
 
         feedbackDiv.innerHTML = html;
@@ -228,13 +288,11 @@ function showFeedback(data) {
         feedbackDiv.classList.add('incorrect');
         let html = '<div class="feedback-title">✗ INCORRECT</div>';
 
-        if (data.actually_in_range) {
-            html += `<div class="feedback-detail">${currentHand} IS in range</div>`;
-        } else {
-            html += `<div class="feedback-detail">${currentHand} is NOT in range (fold)</div>`;
-            if (data.closest_hand) {
-                html += `<div class="feedback-detail">Closest hand in range: <strong>${data.closest_hand}</strong></div>`;
-            }
+        html += `<div class="feedback-detail">You picked: <strong>${data.user_action}</strong></div>`;
+        html += `<div class="feedback-detail">Actual: <strong>${data.actual_action}</strong></div>`;
+
+        if (data.closest_hand) {
+            html += `<div class="feedback-detail">Closest hand in range: <strong>${data.closest_hand}</strong></div>`;
         }
 
         feedbackDiv.innerHTML = html;
