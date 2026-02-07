@@ -115,3 +115,25 @@ The project follows a standard Python package layout:
 
 
 Enjoy practicing! 🃏
+
+## Docker Deployment (Proxmox / Server)
+
+This application is containerized and ready to deploy.
+
+### Quick Start
+
+1.  **Clone the project** to your server.
+2.  **Run with Docker Compose**:
+    ```bash
+    docker compose up -d --build
+    ```
+3.  **Access the Application**:
+    - Open your browser to `http://<your-server-ip>:5000`.
+
+### Updating
+
+If you modify `ranges.json` or update the code, rebuild the container:
+
+```bash
+docker compose up -d --build
+```
