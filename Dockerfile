@@ -30,6 +30,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV FLASK_APP=poker_range_practice
 ENV HOST=0.0.0.0
 ENV PORT=5000
+ENV SECRET_KEY=production_secret_key_change_me_in_prod
 
 EXPOSE 5000
 

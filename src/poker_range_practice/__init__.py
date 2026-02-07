@@ -2,13 +2,15 @@
 Flask backend for poker range practice web app.
 """
 import os
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, session
 import random
 from .poker_hands import generate_all_hands, find_closest_hand_in_range, find_bottom_of_range_category, Hand
 from .range_manager import RangeManager
 
 def create_app():
     app = Flask(__name__, static_url_path='', static_folder='static')
+    # Use a consistent secret key so all workers share the same Session Interface
+    app.secret_key = os.environ.get('SECRET_KEY', 'dev_key_for_poker_practice_local')
 
     # Global state
     # Use absolute path for ranges.json relative to this file
@@ -18,9 +20,13 @@ def create_app():
     range_manager = RangeManager(ranges_path)
     all_hands = generate_all_hands()
     
-    # Store current range in app config or a global dictionary to avoid global variable issues
-    # For simplicity in this single-user local app, we'll keep a simple approach but make it accessible
-    state = {'current_range': None}
+    def get_current_range():
+        """Helper to get current range based on session."""
+        if 'config' not in session:
+            return None
+        
+        cfg = session['config']
+        return range_manager.get_range(cfg['position'], cfg['action'], cfg['stack_depth'])
 
     @app.route('/')
     def index():
@@ -52,20 +58,29 @@ def create_app():
         action = data.get('action')
         stack_depth = data.get('stack_depth')
         
-        state['current_range'] = range_manager.get_range(position, action, stack_depth)
+        # Validate existence
+        current_range = range_manager.get_range(position, action, stack_depth)
         
-        if state['current_range'] is None:
+        if current_range is None:
             return jsonify({'error': 'Range not found'}), 404
+        
+        # Store in session
+        session['config'] = {
+            'position': position,
+            'action': action,
+            'stack_depth': stack_depth
+        }
         
         return jsonify({
             'success': True,
-            'range_size': len(state['current_range'])
+            'range_size': len(current_range)
         })
 
     @app.route('/api/next-hand', methods=['GET'])
     def get_next_hand():
         """Get a random hand for practice."""
-        if state['current_range'] is None:
+        current_range = get_current_range()
+        if current_range is None:
             return jsonify({'error': 'No active practice session'}), 400
         
         hand = random.choice(all_hands)
@@ -74,13 +89,16 @@ def create_app():
     @app.route('/api/check-answer', methods=['POST'])
     def check_answer():
         """Check if the user's answer is correct."""
-        current_range = state['current_range']
+        current_range = get_current_range()
         
         if current_range is None:
             return jsonify({'error': 'No active practice session'}), 400
         
         data = request.json
         hand_str = data.get('hand')
+        if not hand_str:
+            return jsonify({'error': 'No hand provided'}), 400
+
         user_says_in_range = data.get('in_range', "not answered yet")
         
         hand = Hand(hand_str)

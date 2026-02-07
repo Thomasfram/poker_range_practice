@@ -151,14 +151,23 @@ async function startPractice() {
 async function loadNextHand() {
     feedbackDiv.classList.add('hidden');
     nextBtn.style.display = 'none';
-    inRangeBtn.disabled = false;
-    foldBtn.disabled = false;
+    inRangeBtn.disabled = true;
+    foldBtn.disabled = true;
 
     try {
         const response = await fetch('/api/next-hand');
         const data = await response.json();
+
+        if (data.error) {
+            console.error('Error:', data.error);
+            return;
+        }
+
         currentHand = data.hand;
         currentHandDisplay.textContent = currentHand;
+
+        inRangeBtn.disabled = false;
+        foldBtn.disabled = false;
     } catch (error) {
         console.error('Error loading next hand:', error);
     }
