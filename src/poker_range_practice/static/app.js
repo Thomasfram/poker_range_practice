@@ -151,40 +151,46 @@ async function startPractice() {
     }
 }
 
+const ACTION_COLORS = {
+    'in_range': '#28a745', // Green
+    'open': '#28a745',     // Green
+    '3bet': '#d9534f',     // Red
+    '4bet': '#d9534f',     // Red
+    'call': '#5bc0de',     // Blue
+    'limp': '#f0ad4e',     // Orange/Yellow
+    'check': '#f0ad4e',    // Orange
+    'raise': '#d9534f',    // Red
+    'fold': '#dc3545',     // Red (Danger)
+    'default': '#6c757d'   // Grey
+};
+
+function getActionColor(action) {
+    // Handle variants like '3bet_l', 'raise_l' -> map to base color
+    let base = action.split('_')[0];
+    return ACTION_COLORS[base] || ACTION_COLORS[action] || ACTION_COLORS['default'];
+}
+
+function getActionLabel(action) {
+    if (action === 'in_range') return '✓ In Range';
+    if (action === 'fold') return '✗ Fold';
+    // Capitalize and replace underscore
+    return action.charAt(0).toUpperCase() + action.slice(1).replace('_', ' ');
+}
+
 function setupActionButtons() {
     buttonGroup.innerHTML = ''; // Clear existing
 
-    // Always add "Fold" button later, or as part of actions logic?
-    // Start API returns "Active" actions (e.g. 3bet, call). "Fold" is implicit fallback.
-    // We should explicitly add a Fold button.
-
-    // Sort actions?
     const actions = [...currentConfig.availableActions];
 
     // Create buttons for active actions
     actions.forEach(action => {
         const btn = document.createElement('button');
         btn.className = 'btn btn-large action-btn';
-        // Style specific actions if needed
-        if (action === 'in_range') {
-            btn.textContent = '✓ In Range';
-            btn.classList.add('btn-success');
-        } else if (action === '3bet') {
-            btn.textContent = '3-Bet';
-            btn.style.backgroundColor = '#d9534f'; // Example red
-            btn.style.color = 'white';
-        } else if (action === 'call') {
-            btn.textContent = 'Call';
-            btn.style.backgroundColor = '#5bc0de'; // Example blue
-            btn.style.color = 'white';
-        } else if (action === '3bet_l') {
-            btn.textContent = '3-Bet (L)'; // Low freq? Linear?
-            btn.style.backgroundColor = '#f0ad4e'; // Example orange
-            btn.style.color = 'white';
-        } else {
-            btn.textContent = action;
-            btn.classList.add('btn-secondary');
-        }
+        btn.textContent = getActionLabel(action);
+
+        const color = getActionColor(action);
+        btn.style.backgroundColor = color;
+        btn.style.color = 'white';
 
         btn.dataset.action = action;
         btn.addEventListener('click', () => submitAnswer(action));
@@ -193,8 +199,10 @@ function setupActionButtons() {
 
     // Always add Fold button last
     const foldBtn = document.createElement('button');
-    foldBtn.className = 'btn btn-danger btn-large action-btn';
+    foldBtn.className = 'btn btn-large action-btn';
     foldBtn.textContent = '✗ Fold';
+    foldBtn.style.backgroundColor = ACTION_COLORS['fold'];
+    foldBtn.style.color = 'white';
     foldBtn.dataset.action = 'fold';
     foldBtn.addEventListener('click', () => submitAnswer('fold'));
     buttonGroup.appendChild(foldBtn);
@@ -208,6 +216,20 @@ async function loadNextHand() {
     // Enable all action buttons
     const btns = document.querySelectorAll('.action-btn');
     btns.forEach(btn => btn.disabled = false);
+
+    // Reset styles (opacity, border, etc)
+    btns.forEach(btn => {
+        btn.style.opacity = '1';
+        btn.style.transform = 'none';
+        btn.style.boxShadow = 'none';
+        btn.style.border = 'none';
+
+        // Reset label (remove checkmark if added)
+        const action = btn.dataset.action;
+        btn.textContent = getActionLabel(action);
+        // Re-apply explicit fold label if needed, but getActionLabel handles it
+        if (action === 'fold') btn.textContent = '✗ Fold';
+    });
 
     try {
         const response = await fetch('/api/next-hand');
@@ -267,6 +289,30 @@ async function submitAnswer(action) {
 
 function showFeedback(data) {
     feedbackDiv.classList.remove('hidden', 'correct', 'incorrect');
+
+    // Highlight the correct action button
+    const actualAction = data.actual_action;
+    const correctBtn = document.querySelector(`.action-btn[data-action="${actualAction}"]`);
+    if (correctBtn) {
+        // Make it stand out
+        correctBtn.style.opacity = '1';
+        correctBtn.style.transform = 'scale(1.05)';
+        correctBtn.style.boxShadow = '0 0 15px rgba(255, 215, 0, 0.7)'; // Gold glow
+        correctBtn.style.border = '3px solid white';
+
+        // Add checkmark if not present
+        if (!correctBtn.textContent.includes('✓') && !correctBtn.textContent.includes('✗')) {
+            correctBtn.textContent = '✓ ' + correctBtn.textContent;
+        }
+    }
+
+    // Dim other buttons (including the one user picked if wrong)
+    const allBtns = document.querySelectorAll('.action-btn');
+    allBtns.forEach(btn => {
+        if (btn !== correctBtn) {
+            btn.style.opacity = '0.5';
+        }
+    });
 
     if (data.correct) {
         feedbackDiv.classList.add('correct');

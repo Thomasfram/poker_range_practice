@@ -3,6 +3,12 @@
         "open": {
             "50bb": "22+, A2s+, K2s+, Q2s+, J3s+, T5s+, 95s+, 85s+, 75s+, 64s+, 54s+, A2o+, K8o+, Q8o+, J8o+, T8o+, 98o",
             "25bb": "33+, A2s+, K2s+, Q4s+, J5s+, T6s+, 96s+, 86s+, 75s+, 65s+, 54s+, A4o+, K8o+, Q8o+, J9o+, T9o+"
+        },
+        "vs BB": {
+            "50bb": {
+                "4bet": "AKs, AQo-AKo, TT-QQ, 33-44",
+                "call": "55-99, KK-AA, A2s-AQs, K6s+, Q8s+, J8s+, T8s+, 98s, 87s, ATo-AJo, KJo+, QJo"
+            }
         }
     },
     "SB": {
@@ -14,22 +20,30 @@
         }
     },
     "BB": {
-        "3bet vs BTN": {
+        "vs BTN": {
             "50bb": {
                 "3bet": "TT+, AJs+, KQs+, AQo+",
                 "3bet_l": "87s, 98s, A2o-A3o, K4o, Q5o, A6o",
-                "call": "A2s-ATs, K2s-KJs, Q2s-QJs, J2s-JTs, T2s-T9s, 92s-97s, 82s-86s, 72s-76s, 62s-65s, 52s-54s, 42s-43s, 32s, AJo-A7o, A5o-A4o, KQo-K5o, K3o-K2o, QJo-Q6o, JTo-J7o, T9o-T7o, 98o-97o, 87o, 76o, 65o, 54o"
+                "call": "22-99, A2s-ATs, K2s-KJs, Q2s-QJs, J2s-JTs, T2s-T9s, 92s-97s, 82s-86s, 72s-76s, 62s-65s, 52s-54s, 42s-43s, 32s, AJo-A7o, A5o-A4o, KQo-K5o, K3o-K2o, QJo-Q6o, JTo-J7o, T9o-T7o, 98o-97o, 87o, 76o, 65o, 54o"
+            }
+        },
+        "vs CO": {
+            "50bb": {
+                "3bet": "99+, AQs+, AQo+",
+                "3bet_l": "76s, 98s, T9s, T7s, J8s, A5o-A6o, K7o",
+                "call": "22-88, A2s-AJs, K2s-KQs, Q2s-QJs, J2s-J7s, J9s-JTs, T2s-T6s, T8s, 92s-97s, 82s-87s, 72s-75s, 62s-65s, 52s-54s, 42s-43s, 32s, AJo-A7o, A4o-A2o, KQo-K8o, QJo-Q8o, JTo-J9o, T9o-T8o, 98o, 87o, 76o, 65o"
             }
         },
         "vs sb_limp": {
             "50bb": {
-                "raise": "55+, A2s+, K8s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 75s+, 64s+, 53s+, 43s, 62s, 72s, 82s, A8o+, KJo+, Q2o-Q5o, J2o-J5o, T2o-T5o, 92o-95o",
-                "check": "A2s-A3s, 77-22, K6s-K2s, Q8s-Q2s, J8s-J4s, T7s-T4s, 97s-92s, 87s-82s, 76s-73s, 64s-63s, 53s-52s, 43s-42s, 32s, A8o-A2o, K9o-K7o, K4o-K2o, QTo-Q7o, Q4o-Q3o, JTo-J5o, T9o-T6o, 98o-96o, 87o-86o, 76o, 65o, 54o"
+                "raise": "55+, A2s+, K8s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 75s+, 64s+, 53s+, A8o+, KJo+",
+                "raise_l": "43s, 62s, 72s, 82s, Q2o-Q5o, J2o-J5o, T2o-T5o, 92o-95o",
+                "check": "44-22, K7s-K2s, Q7s-Q2s, J7s-J2s, T7s-T2s, 96s-92s, 85s-83s, 74s-73s, 63s, 52s, 42s, 32s, A7o-A2o, KTo-K2o, QJo-Q6o, Q4o-Q3o, JTo-J6o, T9o-T6o, 98o-96o, 87o-82o, 76o-72o, 65o-62o, 54o-52o, 43o-42o, 32o"
             }
         },
         "vs sb_raise": {
             "50bb": {
-                "3bet": "99+, AJs+, AQo+,",
+                "3bet": "99+, AJs+, AQo+",
                 "3bet_l": "87s, 76s, A2o-A4o, K5o-K6o, Q7o, J7o",
                 "call": "A2s-ATs, 88-22, KQs-K2s, QJs-Q2s, JTs-J2s, T9s-T2s, 98s-92s, 86s-84s, 75s-73s, 65s-62s, 54s-52s, 43s-42s, 32s, A5o-AJo, K7o-KQo, QJo-Q8o, Q4o-Q3o, JTo-J8o, T9o-T7o, 98o-97o, 87o"
             }
