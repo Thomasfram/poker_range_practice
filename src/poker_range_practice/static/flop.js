@@ -2,12 +2,10 @@
 //  FLOP PAGE — Configuration & Table UI
 // ─────────────────────────────────────────────
 
-const POSITIONS = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
+const POSITIONS = ['CO', 'BTN', 'SB', 'BB'];
 
 const STACK_DEPTHS = [
-    { label: '15bb', value: 15, desc: 'Short stack' },
-    { label: '25bb', value: 25, desc: 'Short-mid' },
-    { label: '40bb', value: 40, desc: 'Mid stack' },
+    { label: '20bb', value: 20, desc: 'Short stack' },
     { label: '50bb', value: 50, desc: 'Standard' },
     { label: '100bb', value: 100, desc: 'Deep stack' },
 ];
