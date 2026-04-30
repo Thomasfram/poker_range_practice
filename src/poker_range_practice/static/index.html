@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poker Range Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -19,64 +22,210 @@
             </div>
         </header>
 
-        <!-- Configuration Screen -->
-        <div id="config-screen" class="screen active">
-            <div class="config-card">
-                <h2>Select Configuration</h2>
+        <!-- Page Navigation Tabs -->
+        <nav class="page-tabs" id="page-tabs">
+            <button class="tab-btn active" id="tab-preflop" data-page="preflop">
+                <span class="tab-icon">🂠</span> Preflop
+            </button>
+            <button class="tab-btn" id="tab-flop" data-page="flop">
+                <span class="tab-icon">🃁</span> Flop
+            </button>
+        </nav>
 
-                <div class="form-group">
-                    <label for="position">Position</label>
-                    <select id="position" class="select-input">
-                        <option value="">Choose position...</option>
-                    </select>
-                </div>
+        <!-- ═══════════════════════════════ PREFLOP PAGE ═══════════════════════════════ -->
+        <div id="page-preflop" class="page active">
 
-                <div class="form-group">
-                    <label for="action">Action</label>
-                    <select id="action" class="select-input" disabled>
-                        <option value="">Choose action...</option>
-                    </select>
-                </div>
+            <!-- Configuration Screen -->
+            <div id="config-screen" class="screen active">
+                <div class="config-card">
+                    <h2>Select Configuration</h2>
 
-                <div class="form-group">
-                    <label for="stack-depth">Stack Depth</label>
-                    <select id="stack-depth" class="select-input" disabled>
-                        <option value="">Choose stack depth...</option>
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label for="position">Position</label>
+                        <select id="position" class="select-input">
+                            <option value="">Choose position...</option>
+                        </select>
+                    </div>
 
-                <button id="start-btn" class="btn btn-primary" disabled>Start Practice</button>
-            </div>
-        </div>
+                    <div class="form-group">
+                        <label for="action">Action</label>
+                        <select id="action" class="select-input" disabled>
+                            <option value="">Choose action...</option>
+                        </select>
+                    </div>
 
-        <!-- Practice Screen -->
-        <div id="practice-screen" class="screen">
-            <div class="practice-card">
-                <div class="config-display" id="config-display"></div>
+                    <div class="form-group">
+                        <label for="stack-depth">Stack Depth</label>
+                        <select id="stack-depth" class="select-input" disabled>
+                            <option value="">Choose stack depth...</option>
+                        </select>
+                    </div>
 
-                <div class="hand-display">
-                    <div class="hand-label">Your Hand:</div>
-                    <div class="hand-value" id="current-hand">AKs</div>
-                </div>
-
-                <div class="question">Is this hand in range?</div>
-
-                <div class="button-group">
-                    <!-- Buttons are generated dynamically by app.js -->
-                </div>
-
-                <div id="feedback" class="feedback hidden"></div>
-
-                <button id="next-btn" class="btn btn-primary btn-large" style="display: none;">Next Hand →</button>
-
-                <div class="actions">
-                    <button class="btn btn-secondary" id="back-btn">← Back to Menu</button>
+                    <button id="start-btn" class="btn btn-primary" disabled>Start Practice</button>
                 </div>
             </div>
+
+            <!-- Practice Screen -->
+            <div id="practice-screen" class="screen">
+                <div class="practice-card">
+                    <div class="config-display" id="config-display"></div>
+
+                    <div class="hand-display">
+                        <div class="hand-label">Your Hand:</div>
+                        <div class="hand-value" id="current-hand">AKs</div>
+                    </div>
+
+                    <div class="question">Is this hand in range?</div>
+
+                    <div class="button-group">
+                        <!-- Buttons are generated dynamically by app.js -->
+                    </div>
+
+                    <div id="feedback" class="feedback hidden"></div>
+
+                    <button id="next-btn" class="btn btn-primary btn-large" style="display: none;">Next Hand →</button>
+
+                    <div class="actions">
+                        <button class="btn btn-secondary" id="back-btn">← Back to Menu</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
+        <!-- end #page-preflop -->
+
+        <!-- ═══════════════════════════════ FLOP PAGE ═══════════════════════════════ -->
+        <div id="page-flop" class="page">
+
+            <!-- Flop Config Screen -->
+            <div id="flop-config-screen" class="screen active">
+                <div class="config-card">
+                    <h2>🃁 Flop Practice Setup</h2>
+
+                    <div class="flop-config-grid">
+
+                        <!-- Hero Position -->
+                        <div class="position-section">
+                            <div class="position-section-title">
+                                <span class="section-badge hero-badge">HERO</span>
+                                <span>Your Position</span>
+                            </div>
+                            <div class="position-buttons" id="hero-position-buttons">
+                                <!-- generated by flop.js -->
+                            </div>
+                        </div>
+
+                        <!-- Villain Position -->
+                        <div class="position-section">
+                            <div class="position-section-title">
+                                <span class="section-badge villain-badge">VILLAIN</span>
+                                <span>Opponent Position</span>
+                            </div>
+                            <div class="position-buttons" id="villain-position-buttons">
+                                <!-- generated by flop.js -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Stack Depth -->
+                    <div class="form-group stack-depth-group">
+                        <label class="stack-depth-label">Stack Depth</label>
+                        <div class="stack-depth-slider-container">
+                            <div class="stack-depth-buttons" id="flop-stack-depth-buttons">
+                                <!-- generated by flop.js -->
+                            </div>
+                        </div>
+                        <div class="stack-depth-preview" id="stack-depth-preview">
+                            Select a stack depth
+                        </div>
+                    </div>
+
+                    <!-- Summary & Start -->
+                    <div class="flop-summary" id="flop-summary">
+                        <div class="summary-row" id="flop-summary-text">Complete the configuration above to start.</div>
+                    </div>
+
+                    <button id="flop-start-btn" class="btn btn-primary" disabled>
+                        Start Flop Practice
+                    </button>
+                </div>
+            </div>
+
+            <!-- Flop Practice Screen -->
+            <div id="flop-practice-screen" class="screen">
+
+                <!-- Top bar: config label + back btn + stats -->
+                <div class="flop-topbar">
+                    <button class="btn btn-secondary flop-back-top" id="flop-back-btn">← Back</button>
+                    <div class="flop-config-label" id="flop-config-display"></div>
+                    <div class="flop-mini-stats">
+                        <span id="flop-correct">0</span>/<span id="flop-total">0</span>
+                        <span class="flop-acc" id="flop-accuracy">0%</span>
+                    </div>
+                </div>
+
+                <!-- ── Poker Table ── -->
+                <div class="poker-table-wrap">
+                    <div class="poker-table">
+
+                        <!-- Villain zone (top) -->
+                        <div class="player-zone villain-zone">
+                            <div class="player-label villain-label">
+                                <span class="player-badge villain-badge-sm">VILLAIN</span>
+                                <span class="player-pos" id="villain-pos-label">BTN</span>
+                            </div>
+                            <div class="hole-cards villain-cards" id="villain-cards">
+                                <div class="card card-back"></div>
+                                <div class="card card-back"></div>
+                            </div>
+                        </div>
+
+                        <!-- Community cards (center) -->
+                        <div class="community-zone">
+                            <div class="pot-label" id="flop-pot-label">Pot: 0bb</div>
+                            <div class="community-cards" id="community-cards">
+                                <div class="card community-card" id="flop-c1">?</div>
+                                <div class="card community-card" id="flop-c2">?</div>
+                                <div class="card community-card" id="flop-c3">?</div>
+                            </div>
+                        </div>
+
+                        <!-- Hero zone (bottom) -->
+                        <div class="player-zone hero-zone">
+                            <div class="hole-cards hero-cards" id="hero-cards">
+                                <div class="card hero-card" id="hero-card-1">A<span>♠</span></div>
+                                <div class="card hero-card" id="hero-card-2">K<span>♥</span></div>
+                            </div>
+                            <div class="player-label hero-label">
+                                <span class="player-badge hero-badge-sm">HERO</span>
+                                <span class="player-pos" id="hero-pos-label">BB</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="flop-action-area">
+                    <div class="flop-situation-label" id="flop-situation">Select your action:</div>
+                    <div class="flop-btn-group" id="flop-btn-group">
+                        <!-- generated by flop.js -->
+                    </div>
+                    <div id="flop-feedback" class="feedback hidden"></div>
+                    <button id="flop-next-btn" class="btn btn-primary btn-large"
+                        style="display:none; margin-top: 12px;">Next Hand →</button>
+                </div>
+
+            </div>
+
+        </div>
+        <!-- end #page-flop -->
+
     </div>
 
     <script src="app.js"></script>
+    <script src="flop.js"></script>
 </body>
 
 </html>

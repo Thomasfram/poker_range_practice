@@ -59,7 +59,8 @@ h1 {
     display: block;
 }
 
-.config-card, .practice-card {
+.config-card,
+.practice-card {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     padding: 40px;
@@ -239,6 +240,7 @@ label {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -280,21 +282,404 @@ label {
     h1 {
         font-size: 2rem;
     }
-    
+
     .stats {
         flex-direction: column;
         gap: 10px;
     }
-    
-    .config-card, .practice-card {
+
+    .config-card,
+    .practice-card {
         padding: 25px;
     }
-    
+
     .hand-value {
         font-size: 3rem;
     }
-    
+
     .button-group {
         grid-template-columns: 1fr;
+    }
+}
+
+/* ══════════════════════════════════════════
+   FLOP PRACTICE — POKER TABLE UI
+══════════════════════════════════════════ */
+
+/* Top bar */
+.flop-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    gap: 10px;
+}
+
+.flop-back-top {
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.flop-back-top:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.flop-config-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    text-align: center;
+    flex: 1;
+}
+
+.flop-mini-stats {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.flop-acc {
+    margin-left: 6px;
+    color: #ffd700;
+    font-weight: 700;
+}
+
+/* ── Table wrap ─────────────────────────── */
+.poker-table-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+.poker-table {
+    width: 100%;
+    max-width: 540px;
+    background: radial-gradient(ellipse at center, #2d7a3a 0%, #1a5c28 55%, #124020 100%);
+    border-radius: 120px;
+    border: 10px solid #5a3a1a;
+    box-shadow:
+        inset 0 2px 12px rgba(0, 0, 0, 0.4),
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 0 0 3px #3d2510;
+    padding: 28px 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    min-height: 300px;
+    position: relative;
+}
+
+/* Subtle felt texture overlay */
+.poker-table::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 110px;
+    background-image: repeating-linear-gradient(0deg,
+            transparent,
+            transparent 3px,
+            rgba(0, 0, 0, 0.03) 3px,
+            rgba(0, 0, 0, 0.03) 4px);
+    pointer-events: none;
+}
+
+/* ── Player zones ───────────────────────── */
+.player-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+}
+
+.villain-zone {
+    flex-direction: column;
+}
+
+.hero-zone {
+    flex-direction: column-reverse;
+}
+
+.player-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.player-badge {
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.villain-badge-sm {
+    background: rgba(192, 57, 43, 0.9);
+    color: white;
+}
+
+.hero-badge-sm {
+    background: rgba(30, 60, 114, 0.9);
+    color: white;
+}
+
+.player-pos {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* ── Hole cards ─────────────────────────── */
+.hole-cards {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+/* ── Community zone ─────────────────────── */
+.community-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+}
+
+.pot-label {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.community-cards {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+/* ── Cards ──────────────────────────────── */
+.card {
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    user-select: none;
+    position: relative;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Card back (villain) */
+.card-back {
+    width: 44px;
+    height: 60px;
+    background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #1a237e 100%);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    background-image:
+        linear-gradient(135deg, #1a237e 0%, #283593 50%, #1a237e 100%),
+        repeating-linear-gradient(45deg,
+            transparent,
+            transparent 4px,
+            rgba(255, 255, 255, 0.04) 4px,
+            rgba(255, 255, 255, 0.04) 8px);
+}
+
+.card-back::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+/* Community cards (face-up, unknown) */
+.community-card {
+    width: 52px;
+    height: 72px;
+    background: white;
+    border: 1px solid #ddd;
+    font-size: 1.4rem;
+    color: #bbb;
+    cursor: default;
+    transition: transform 0.2s ease;
+}
+
+.community-card.revealed {
+    color: #222;
+    font-size: 1rem;
+    font-weight: 800;
+    flex-direction: column;
+    line-height: 1.1;
+    padding: 4px;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.community-card.revealed .card-suit-red {
+    color: #d32f2f;
+}
+
+/* Hero hole cards */
+.hero-card {
+    width: 58px;
+    height: 80px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    font-size: 1.25rem;
+    flex-direction: column;
+    gap: 0;
+    padding: 5px;
+    align-items: flex-start;
+    justify-content: flex-start;
+    line-height: 1;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hero-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+}
+
+.hero-card span {
+    font-size: 1.3rem;
+    display: block;
+}
+
+.hero-card.red-suit span,
+.hero-card.red-suit {
+    color: #d32f2f;
+}
+
+.hero-card .card-rank {
+    font-size: 1.1rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.hero-card .card-suit-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+/* Card deal animation */
+@keyframes dealCard {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.8) rotate(-5deg);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotate(0deg);
+    }
+}
+
+.card.deal-anim {
+    animation: dealCard 0.3s ease forwards;
+}
+
+/* ── Action area ────────────────────────── */
+.flop-action-area {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 20px;
+    color: #333;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.flop-situation-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 14px;
+}
+
+.flop-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.flop-action-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: white;
+    transition: all 0.2s ease;
+    min-width: 110px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.flop-action-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.flop-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ── Mobile ─────────────────────────────── */
+@media (max-width: 600px) {
+    .poker-table {
+        border-radius: 80px;
+        border-width: 7px;
+        padding: 20px 16px;
+        gap: 14px;
+    }
+
+    .card-back {
+        width: 36px;
+        height: 50px;
+    }
+
+    .community-card {
+        width: 42px;
+        height: 58px;
+        font-size: 1.1rem;
+    }
+
+    .hero-card {
+        width: 50px;
+        height: 68px;
+    }
+
+    .flop-topbar {
+        padding: 8px 10px;
+        gap: 6px;
+    }
+
+    .flop-config-label {
+        font-size: 0.75rem;
     }
 }
