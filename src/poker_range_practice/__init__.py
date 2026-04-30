@@ -184,15 +184,24 @@ def create_app() -> FastAPI:
 
     @app.post("/api/flop/check-cbet")
     def check_cbet(body: CheckCbetRequest):
-        if body.hero_position not in ("BTN", "CO"):
-            raise HTTPException(status_code=400, detail="Position non supportée pour l'instant (BTN/CO uniquement)")
-        if body.villain_position != "BB":
-            raise HTTPException(status_code=400, detail="Villain non supporté pour l'instant (BB uniquement)")
+        supported = {
+            "BTN": ("BB", "SB"),
+            "CO":  ("BB",),
+        }
+        if body.hero_position not in supported:
+            raise HTTPException(status_code=400, detail=f"Position héro non supportée : {body.hero_position}")
+        if body.villain_position not in supported[body.hero_position]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Situation {body.hero_position} vs {body.villain_position} non supportée"
+            )
 
         hole = [FlopCard(c.rank, c.suit) for c in body.hero_cards]
         board = [FlopCard(c.rank, c.suit) for c in body.board_cards]
 
-        rec = get_cbet_recommendation(hole, board, body.hero_position, body.stack_depth)
+        rec = get_cbet_recommendation(
+            hole, board, body.hero_position, body.villain_position, body.stack_depth
+        )
 
         user_bets = body.user_action == "bet"
         is_correct = user_bets == rec["should_bet"]

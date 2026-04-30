@@ -421,8 +421,8 @@ async function submitCbet(action, sizing) {
         user_sizing: sizing,
     };
 
-    // Only BTN/CO vs BB is supported for now
-    if (!['BTN', 'CO'].includes(hero) || villain !== 'BB') {
+    const supported = { BTN: ['BB', 'SB'], CO: ['BB'] };
+    if (!supported[hero] || !supported[hero].includes(villain)) {
         document.getElementById('flop-feedback').className = 'feedback correct';
         document.getElementById('flop-feedback').innerHTML = `
             <div class="feedback-title">Situation non supportée</div>
@@ -461,9 +461,20 @@ function showCbetFeedback(data, userAction, userSizing) {
     feedback.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
 
     const textureColors = {
-        TRES_DRY: '#27ae60',
-        INTERMEDIAIRE: '#e67e22',
-        DRAWY: '#c0392b',
+        // BTN/CO vs BB
+        TRES_DRY:     '#27ae60',
+        INTERMEDIAIRE:'#e67e22',
+        DRAWY:        '#c0392b',
+        // BTN vs SB — vert = range bet, orange = bon, rouge = difficile
+        range_low_mid_pair: '#27ae60',
+        range_nine_eight:   '#27ae60',
+        range_low_board:    '#27ae60',
+        qjt_high:           '#e67e22',
+        double_broadway:    '#e67e22',
+        ak_dry:             '#e67e22',
+        high_pair:          '#c0392b',
+        ak_drawy:           '#c0392b',
+        monocolor:          '#8e44ad',
     };
     const tc = textureColors[data.texture] || '#888';
 
