@@ -1,166 +1,228 @@
 """
-Flask backend for poker range practice web app.
+FastAPI backend for poker range practice web app.
 """
+
 import os
-from flask import Flask, jsonify, request, send_from_directory, session
 import random
-from .poker_hands import generate_all_hands, find_closest_hand_in_range, find_bottom_of_range_category, Hand
+from pathlib import Path
+from typing import Optional
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
+from pydantic import BaseModel
+
+from .poker_hands import (
+    generate_all_hands,
+    find_closest_hand_in_range,
+    find_bottom_of_range_category,
+    Hand,
+)
 from .range_manager import RangeManager
+from .flop_strategy import Card as FlopCard, get_cbet_recommendation
 
-def create_app():
-    app = Flask(__name__, static_url_path='', static_folder='static')
-    # Use a consistent secret key so all workers share the same Session Interface
-    app.secret_key = os.environ.get('SECRET_KEY', 'dev_key_for_poker_practice_local')
 
-    # Global state
-    # Use absolute path for ranges.json relative to this file
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    ranges_path = os.path.join(base_dir, "ranges.json")
-    
-    range_manager = RangeManager(ranges_path)
-    all_hands = generate_all_hands()
-    
-    def get_current_range():
-        """Helper to get current range based on session."""
-        if 'config' not in session:
-            return None
-        
-        cfg = session['config']
-        return range_manager.get_range(cfg['position'], cfg['action'], cfg['stack_depth'])
+class StartRequest(BaseModel):
+    position: str
+    action: str
+    stack_depth: str
 
-    @app.route('/')
-    def index():
-        return app.send_static_file('index.html')
 
-    @app.route('/api/positions', methods=['GET'])
+class CheckAnswerRequest(BaseModel):
+    hand: str
+    action: str
+
+
+class FlopHeroHandRequest(BaseModel):
+    hero: str
+    villain: str
+    stackDepth: int
+
+
+class CardData(BaseModel):
+    rank: str
+    suit: str
+
+
+class CheckCbetRequest(BaseModel):
+    hero_cards: list[CardData]
+    board_cards: list[CardData]
+    hero_position: str
+    villain_position: str
+    stack_depth: int
+    user_action: str          # "bet" | "check"
+    user_sizing: Optional[int] = None
+
+
+_base_dir = Path(__file__).parent
+_range_manager = RangeManager(str(_base_dir / "ranges.json"))
+_all_hands = generate_all_hands()
+
+
+def create_app() -> FastAPI:
+    app = FastAPI()
+
+    secret_key = os.environ.get("SECRET_KEY", "dev_key_for_poker_practice_local")
+    app.add_middleware(SessionMiddleware, secret_key=secret_key)
+
+    @app.get("/api/positions")
     def get_positions():
-        """Get all available positions."""
-        positions = range_manager.get_available_positions()
-        return jsonify(positions)
+        return _range_manager.get_available_positions()
 
-    @app.route('/api/actions/<position>', methods=['GET'])
-    def get_actions(position):
-        """Get available actions for a position."""
-        actions = range_manager.get_available_actions(position)
-        return jsonify(actions)
+    @app.get("/api/actions/{position}")
+    def get_actions(position: str):
+        return _range_manager.get_available_actions(position)
 
-    @app.route('/api/stack-depths/<position>/<action>', methods=['GET'])
-    def get_stack_depths(position, action):
-        """Get available stack depths for a position/action."""
-        stack_depths = range_manager.get_available_stack_depths(position, action)
-        return jsonify(stack_depths)
+    @app.get("/api/stack-depths/{position}/{action}")
+    def get_stack_depths(position: str, action: str):
+        return _range_manager.get_available_stack_depths(position, action)
 
-    @app.route('/api/start', methods=['POST'])
-    def start_practice():
-        """Start practice session with given configuration."""
-        data = request.json
-        position = data.get('position')
-        action = data.get('action')
-        stack_depth = data.get('stack_depth')
-        
-        # Validate existence
-        current_range = range_manager.get_range(position, action, stack_depth)
-        
+    @app.post("/api/start")
+    def start_practice(body: StartRequest, request: Request):
+        current_range = _range_manager.get_range(body.position, body.action, body.stack_depth)
         if current_range is None:
-            return jsonify({'error': 'Range not found'}), 404
-        
-        # Get available actions for this specific range
-        range_actions = range_manager.get_available_range_actions(position, action, stack_depth)
-        
-        # Store in session
-        session['config'] = {
-            'position': position,
-            'action': action,
-            'stack_depth': stack_depth
+            raise HTTPException(status_code=404, detail="Range not found")
+
+        range_actions = _range_manager.get_available_range_actions(
+            body.position, body.action, body.stack_depth
+        )
+
+        request.session["config"] = {
+            "position": body.position,
+            "action": body.action,
+            "stack_depth": body.stack_depth,
         }
-        
-        return jsonify({
-            'success': True,
-            'range_size': len(current_range),
-            'available_actions': range_actions
-        })
 
-    @app.route('/api/next-hand', methods=['GET'])
-    def get_next_hand():
-        """Get a random hand for practice."""
-        current_range = get_current_range()
+        return {
+            "success": True,
+            "range_size": len(current_range),
+            "available_actions": range_actions,
+        }
+
+    @app.get("/api/next-hand")
+    def get_next_hand(request: Request):
+        config = request.session.get("config")
+        if config is None:
+            raise HTTPException(status_code=400, detail="No active practice session")
+
+        current_range = _range_manager.get_range(
+            config["position"], config["action"], config["stack_depth"]
+        )
         if current_range is None:
-            return jsonify({'error': 'No active practice session'}), 400
-        
-        hand = random.choice(all_hands)
-        return jsonify({'hand': str(hand)})
+            raise HTTPException(status_code=400, detail="No active practice session")
 
-    @app.route('/api/check-answer', methods=['POST'])
-    def check_answer():
-        """Check if the user's answer is correct."""
-        current_range = get_current_range()
-        
+        hand = random.choice(_all_hands)
+        return {"hand": str(hand)}
+
+    @app.post("/api/check-answer")
+    def check_answer(body: CheckAnswerRequest, request: Request):
+        config = request.session.get("config")
+        if config is None:
+            raise HTTPException(status_code=400, detail="No active practice session")
+
+        current_range = _range_manager.get_range(
+            config["position"], config["action"], config["stack_depth"]
+        )
         if current_range is None:
-            return jsonify({'error': 'No active practice session'}), 400
-        
-        data = request.json
-        hand_str = data.get('hand')
-        if not hand_str:
-            return jsonify({'error': 'No hand provided'}), 400
+            raise HTTPException(status_code=400, detail="No active practice session")
 
-        # User's selected action (e.g. "3bet", "call", "fold", "in_range")
-        user_action = data.get('action')
-        
-        hand = Hand(hand_str)
-        
-        # Determine actual action for this hand
-        # current_range is now a dict: {Hand: ActionString}
+        hand = Hand(body.hand)
         actual_action = current_range.get(hand, "fold")
-        
-        is_correct = (user_action == actual_action)
-        
-        response = {
-            'correct': is_correct,
-            'actual_action': actual_action,
-            'user_action': user_action
-        }
-        
-        # If incorrect
-        if not is_correct:
-            # If actual valid action is NOT "fold", find closest hand with THAT action?
-            # Or just find closest hand in general "in range" (non-fold)?
-            
-            # Logic: If hand should be folded, but user picked action -> Show closest valid hand for that action?
-            # Or if hand should be action X, but user picked action Y...
-            
-            # Simplified "closest" logic for now:
-            # If actual is "fold", find closest non-fold hand
-            if actual_action == "fold":
-                # Find closest hand that is present in the range (any action)
-                # Create set of hands from dict keys
-                range_hands = set(current_range.keys())
-                closest = find_closest_hand_in_range(hand, range_hands)
-                if closest:
-                    response['closest_hand'] = str(closest)
-                    closest_action = current_range.get(closest)
-                    # response['closest_type'] = closest_action # Optional info
-            else:
-                 # Actual is some active action.
-                 # If user picked "fold", show bottom of that specific action range?
-                pass
+        is_correct = body.action == actual_action
 
-        # If correct and NOT fold, show bottom of range for that action
+        response = {
+            "correct": is_correct,
+            "actual_action": actual_action,
+            "user_action": body.action,
+        }
+
+        if not is_correct and actual_action == "fold":
+            range_hands = set(current_range.keys())
+            closest = find_closest_hand_in_range(hand, range_hands)
+            if closest:
+                response["closest_hand"] = str(closest)
+
         if is_correct and actual_action != "fold":
-             # Filter range to only hands with this action
-             specific_range_hands = [h for h, act in current_range.items() if act == actual_action]
-             bottom = find_bottom_of_range_category(hand, specific_range_hands)
-             if bottom:
-                response['bottom_of_range'] = str(bottom)
-        
-        return jsonify(response)
-    
+            specific_range_hands = [
+                h for h, act in current_range.items() if act == actual_action
+            ]
+            bottom = find_bottom_of_range_category(hand, specific_range_hands)
+            if bottom:
+                response["bottom_of_range"] = str(bottom)
+
+        return response
+
+    @app.post("/api/flop/hero-hand")
+    def get_flop_hero_hand(body: FlopHeroHandRequest):
+        stack_depth = f"{body.stackDepth}bb"
+
+        action = "open"
+        if body.hero == "BB":
+            if body.villain == "BTN":
+                action = "vs BTN"
+            elif body.villain == "CO":
+                action = "vs CO"
+            elif body.villain == "SB":
+                action = "vs sb_raise"
+        elif body.hero == "BTN":
+            if body.villain == "BB":
+                action = "vs BB"
+        elif body.hero == "SB":
+            action = "open_limp"
+
+        current_range = _range_manager.get_range(body.hero, action, stack_depth)
+
+        valid_hands = []
+        if current_range:
+            valid_hands = [str(h) for h, act in current_range.items() if act != "fold"]
+
+        if not valid_hands:
+            valid_hands = [str(h) for h in _all_hands]
+
+        chosen_hand = random.choice(valid_hands)
+        return {"hand": chosen_hand, "action_used": action}
+
+    @app.post("/api/flop/check-cbet")
+    def check_cbet(body: CheckCbetRequest):
+        if body.hero_position not in ("BTN", "CO"):
+            raise HTTPException(status_code=400, detail="Position non supportée pour l'instant (BTN/CO uniquement)")
+        if body.villain_position != "BB":
+            raise HTTPException(status_code=400, detail="Villain non supporté pour l'instant (BB uniquement)")
+
+        hole = [FlopCard(c.rank, c.suit) for c in body.hero_cards]
+        board = [FlopCard(c.rank, c.suit) for c in body.board_cards]
+
+        rec = get_cbet_recommendation(hole, board, body.hero_position, body.stack_depth)
+
+        user_bets = body.user_action == "bet"
+        is_correct = user_bets == rec["should_bet"]
+
+        if is_correct and user_bets and body.user_sizing is not None:
+            is_correct = abs(body.user_sizing - rec["correct_sizing"]) <= 8
+
+        return {
+            "correct": is_correct,
+            "correct_action": "bet" if rec["should_bet"] else "check",
+            "correct_sizing": rec["correct_sizing"],
+            "texture": rec["texture"],
+            "texture_label": rec["texture_label"],
+            "cbet_frequency": rec["cbet_frequency"],
+            "hand_strength": rec["hand_strength"],
+            "hand_label": rec["hand_label"],
+        }
+
+    # Static files mounted last so API routes take precedence
+    app.mount("/", StaticFiles(directory=str(_base_dir / "static"), html=True), name="static")
+
     return app
 
+
 def main():
+    import uvicorn
     print("Starting Poker Range Practice App...")
     print("Open your browser to: http://localhost:5000")
-    app = create_app()
-    app.run(debug=True, port=5000)
+    uvicorn.run("poker_range_practice:create_app", factory=True, host="0.0.0.0", port=5000, reload=True)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

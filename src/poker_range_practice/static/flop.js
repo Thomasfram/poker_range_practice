@@ -217,22 +217,82 @@ function shuffle(arr) {
     return a;
 }
 
-function dealFlopHand() {
-    const deck = shuffle(buildDeck());
-    let i = 0;
+async function dealFlopHand() {
+    const { hero, villain, stackDepth } = flopState;
 
-    // Hero gets 2 cards
-    flopPractice.heroHand = [deck[i++], deck[i++]];
-    // Skip 2 for villain (face down)
-    i += 2;
-    // Burn 1
-    i++;
-    // Flop 3
-    flopPractice.communityCards = [deck[i++], deck[i++], deck[i++]];
+    try {
+        // 1. Demander une main IN RANGE au backend
+        const res = await fetch('/api/flop/hero-hand', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hero, villain, stackDepth: stackDepth.value })
+        });
+        const data = await res.json();
+        const abstractHand = data.hand; // ex: "AKs", "77", "T9o"
 
-    renderHeroCards();
-    renderCommunityCards();
-    resetActionArea();
+        // 2. Générer un paquet neuf
+        let deck = buildDeck();
+
+        // 3. Extraire les cartes réelles correspondantes et les retirer du paquet
+        flopPractice.heroHand = extractCardsForHand(abstractHand, deck);
+
+        // 4. Mélanger le paquet restant
+        deck = shuffle(deck);
+
+        let i = 0;
+        // On passe 2 cartes face cachée pour le villain
+        i += 2;
+        // On brûle 1 carte
+        i++;
+        // On tire le Flop
+        flopPractice.communityCards = [deck[i++], deck[i++], deck[i++]];
+
+        renderHeroCards();
+        renderCommunityCards();
+        resetActionArea();
+
+    } catch (error) {
+        console.error("Erreur lors de la distribution du flop:", error);
+    }
+}
+
+function extractCardsForHand(handStr, deck) {
+    // Analyse la main (ex: "AKs" -> rank1="A", rank2="K", type="s")
+    const rank1 = handStr[0];
+    const rank2 = handStr[1];
+    const type = handStr.length > 2 ? handStr[2] : 'pair';
+
+    let c1, c2;
+
+    if (type === 'pair') {
+        // Paire : on trouve toutes les cartes de ce rang et on en prend 2 au hasard
+        const options = deck.filter(c => c.rank === rank1);
+        const picked = shuffle(options).slice(0, 2);
+        c1 = picked[0];
+        c2 = picked[1];
+    } else if (type === 's') {
+        // Suited : on choisit 1 couleur au hasard, et on prend les deux cartes
+        const suits = ['♠', '♥', '♦', '♣'];
+        const suit = suits[Math.floor(Math.random() * suits.length)];
+        c1 = deck.find(c => c.rank === rank1 && c.suit === suit);
+        c2 = deck.find(c => c.rank === rank2 && c.suit === suit);
+    } else if (type === 'o') {
+        // Offsuit : on choisit 2 couleurs différentes au hasard
+        const suits = ['♠', '♥', '♦', '♣'];
+        const suit1 = suits[Math.floor(Math.random() * suits.length)];
+        let suit2 = suits[Math.floor(Math.random() * suits.length)];
+        while (suit1 === suit2) {
+            suit2 = suits[Math.floor(Math.random() * suits.length)];
+        }
+        c1 = deck.find(c => c.rank === rank1 && c.suit === suit1);
+        c2 = deck.find(c => c.rank === rank2 && c.suit === suit2);
+    }
+
+    // Retirer physiquement les cartes du deck
+    deck.splice(deck.findIndex(c => c === c1), 1);
+    deck.splice(deck.findIndex(c => c === c2), 1);
+
+    return [c1, c2];
 }
 
 // ─── Rendering ───────────────────────────────
@@ -279,66 +339,180 @@ function renderCommunityCards() {
 
 // ─── Action Buttons ───────────────────────────
 
-// Placeholder actions — will be replaced with strategy logic later
-const FLOP_ACTIONS = [
-    { id: 'bet', label: 'Bet', color: '#e67e22' },
-    { id: 'check', label: 'Check', color: '#27ae60' },
-    { id: 'fold', label: 'Fold', color: '#c0392b' },
-];
+// State for current turn's pending action
+const flopTurn = {
+    pendingAction: null,  // 'bet' | 'check'
+};
 
 function buildActionButtons() {
     const group = document.getElementById('flop-btn-group');
     if (!group) return;
     group.innerHTML = '';
+    flopTurn.pendingAction = null;
 
-    FLOP_ACTIONS.forEach(action => {
-        const btn = document.createElement('button');
-        btn.className = 'flop-action-btn';
-        btn.textContent = action.label;
-        btn.dataset.action = action.id;
-        btn.style.backgroundColor = action.color;
-        btn.addEventListener('click', () => submitFlopAnswer(action.id));
-        group.appendChild(btn);
+    const betBtn = makeActionBtn('Bet', '#e67e22', () => selectCbetAction('bet'));
+    const checkBtn = makeActionBtn('Check', '#27ae60', () => selectCbetAction('check'));
+    group.appendChild(betBtn);
+    group.appendChild(checkBtn);
+}
+
+function makeActionBtn(label, color, onClick) {
+    const btn = document.createElement('button');
+    btn.className = 'flop-action-btn';
+    btn.textContent = label;
+    btn.style.backgroundColor = color;
+    btn.addEventListener('click', onClick);
+    return btn;
+}
+
+function selectCbetAction(action) {
+    flopTurn.pendingAction = action;
+
+    // Highlight selected button
+    document.querySelectorAll('.flop-action-btn').forEach(btn => {
+        btn.style.opacity = btn.textContent.toLowerCase() === action ? '1' : '0.4';
     });
+
+    if (action === 'bet') {
+        showSizingButtons();
+    } else {
+        // Check: submit immediately
+        submitCbet('check', null);
+    }
+}
+
+const SIZINGS = [25, 33, 50, 66];
+
+function showSizingButtons() {
+    const group = document.getElementById('flop-btn-group');
+    // Keep bet/check row, add sizing row below
+    const existingRow = group.querySelector('.sizing-row');
+    if (existingRow) existingRow.remove();
+
+    const row = document.createElement('div');
+    row.className = 'sizing-row';
+    row.style.cssText = 'display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap;';
+
+    SIZINGS.forEach(pct => {
+        const btn = document.createElement('button');
+        btn.className = 'flop-action-btn sizing-btn';
+        btn.textContent = `${pct}%`;
+        btn.style.cssText = 'background:#2980b9;min-width:70px;padding:8px 14px;font-size:0.9rem;';
+        btn.addEventListener('click', () => submitCbet('bet', pct));
+        row.appendChild(btn);
+    });
+
+    group.appendChild(row);
+    document.getElementById('flop-situation').textContent = 'Choisissez le sizing :';
+}
+
+async function submitCbet(action, sizing) {
+    document.querySelectorAll('.flop-action-btn').forEach(btn => btn.disabled = true);
+
+    const { hero, villain, stackDepth } = flopState;
+
+    const payload = {
+        hero_cards: flopPractice.heroHand.map(c => ({ rank: c.rank, suit: c.suit })),
+        board_cards: flopPractice.communityCards.map(c => ({ rank: c.rank, suit: c.suit })),
+        hero_position: hero,
+        villain_position: villain,
+        stack_depth: stackDepth.value,
+        user_action: action,
+        user_sizing: sizing,
+    };
+
+    // Only BTN/CO vs BB is supported for now
+    if (!['BTN', 'CO'].includes(hero) || villain !== 'BB') {
+        document.getElementById('flop-feedback').className = 'feedback correct';
+        document.getElementById('flop-feedback').innerHTML = `
+            <div class="feedback-title">Situation non supportée</div>
+            <div class="feedback-detail">La stratégie Cbet est implémentée uniquement pour BTN/CO vs BB pour l'instant.</div>
+        `;
+        flopPractice.stats.total++;
+        updateFlopStats();
+        document.getElementById('flop-next-btn').style.display = 'block';
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/flop/check-cbet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.detail || 'Erreur serveur');
+        }
+        showCbetFeedback(data, action, sizing);
+    } catch (err) {
+        console.error('check-cbet error:', err);
+        document.getElementById('flop-feedback').className = 'feedback incorrect';
+        document.getElementById('flop-feedback').innerHTML = `<div class="feedback-title">Erreur : ${err.message}</div>`;
+        document.getElementById('flop-next-btn').style.display = 'block';
+    }
+}
+
+function showCbetFeedback(data, userAction, userSizing) {
+    const feedback = document.getElementById('flop-feedback');
+    const nextBtn = document.getElementById('flop-next-btn');
+
+    const isCorrect = data.correct;
+    feedback.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+
+    const textureColors = {
+        TRES_DRY: '#27ae60',
+        INTERMEDIAIRE: '#e67e22',
+        DRAWY: '#c0392b',
+    };
+    const tc = textureColors[data.texture] || '#888';
+
+    const textureBadge = `<span style="background:${tc};color:#fff;padding:2px 8px;border-radius:12px;font-size:0.8rem;font-weight:700;">${data.texture_label}</span>`;
+
+    let actionLine;
+    if (data.correct_action === 'bet') {
+        actionLine = `Cbet <strong>${data.correct_sizing}%</strong> du pot`;
+    } else {
+        actionLine = `Check`;
+    }
+
+    let userLine;
+    if (userAction === 'bet' && userSizing) {
+        userLine = `Vous avez joué : <strong>Bet ${userSizing}%</strong>`;
+    } else {
+        userLine = `Vous avez joué : <strong>${userAction === 'bet' ? 'Bet' : 'Check'}</strong>`;
+    }
+
+    feedback.innerHTML = `
+        <div class="feedback-title">${isCorrect ? '✓ Correct !' : '✗ Incorrect'}</div>
+        <div class="feedback-detail" style="margin-top:6px;">
+            Board : ${textureBadge} — Cbet ${data.cbet_frequency}
+        </div>
+        <div class="feedback-detail" style="margin-top:4px;">
+            Ta main : <em>${data.hand_label}</em>
+        </div>
+        <div class="feedback-detail" style="margin-top:4px;">
+            ${isCorrect ? '' : `Bonne réponse : <strong>${actionLine}</strong><br>`}${userLine}
+        </div>
+    `;
+
+    if (isCorrect) {
+        flopPractice.stats.correct++;
+    }
+    flopPractice.stats.total++;
+    updateFlopStats();
+
+    if (nextBtn) nextBtn.style.display = 'block';
 }
 
 function resetActionArea() {
     const feedback = document.getElementById('flop-feedback');
     const nextBtn = document.getElementById('flop-next-btn');
-    if (feedback) { feedback.classList.add('hidden'); feedback.className = 'feedback hidden'; }
+    if (feedback) feedback.className = 'feedback hidden';
     if (nextBtn) nextBtn.style.display = 'none';
 
-    document.querySelectorAll('.flop-action-btn').forEach(btn => {
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.style.transform = '';
-        btn.style.boxShadow = '';
-    });
-
-    document.getElementById('flop-situation').textContent = 'What is your action?';
-}
-
-// Placeholder answer logic — always shows "coming soon" for strategy
-function submitFlopAnswer(action) {
-    document.querySelectorAll('.flop-action-btn').forEach(btn => btn.disabled = true);
-
-    const feedback = document.getElementById('flop-feedback');
-    const nextBtn = document.getElementById('flop-next-btn');
-
-    // Placeholder: strategy not yet defined — just acknowledge + show next
-    feedback.classList.remove('hidden', 'correct', 'incorrect');
-    feedback.classList.add('correct');
-    feedback.innerHTML = `
-        <div class="feedback-title">Hand dealt!</div>
-        <div class="feedback-detail">
-            Strategy logic coming soon. You selected: <strong>${action}</strong>
-        </div>
-    `;
-
-    flopPractice.stats.total++;
-    updateFlopStats();
-
-    if (nextBtn) nextBtn.style.display = 'block';
+    buildActionButtons();
+    document.getElementById('flop-situation').textContent = 'Bet ou Check ?';
 }
 
 function updateFlopStats() {

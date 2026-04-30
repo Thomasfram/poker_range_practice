@@ -555,6 +555,7 @@ label {
     justify-content: flex-start;
     line-height: 1;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    color: #111;
 }
 
 .hero-card:hover {
@@ -681,5 +682,433 @@ label {
 
     .flop-config-label {
         font-size: 0.75rem;
+    }
+}
+
+/* ══════════════════════════════════════════
+   PAGE NAVIGATION TABS (Onglets)
+══════════════════════════════════════════ */
+.page {
+    display: none;
+    /* Cache les pages par défaut */
+}
+
+.page.active {
+    display: block;
+    /* Affiche uniquement la page active */
+}
+
+.page-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.tab-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.tab-btn.active {
+    background: white;
+    color: #1e3c72;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* ══════════════════════════════════════════
+   FLOP CONFIGURATION UI
+══════════════════════════════════════════ */
+.flop-config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 25px;
+}
+
+.position-section-title {
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #555;
+}
+
+.section-badge {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.hero-badge {
+    background: #1e3c72;
+    color: white;
+}
+
+.villain-badge {
+    background: #c0392b;
+    color: white;
+}
+
+.position-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.position-btn {
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    color: #555;
+    transition: all 0.2s;
+    flex: 1;
+    min-width: 50px;
+}
+
+.position-btn:hover {
+    border-color: #aaa;
+}
+
+.position-btn.selected {
+    background: #1e3c72;
+    color: white;
+    border-color: #1e3c72;
+}
+
+.position-btn.conflict {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+    animation: shake 0.4s;
+    /* Petit effet si on choisit la même position */
+}
+
+.stack-depth-group {
+    margin-top: 30px;
+}
+
+.stack-depth-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.stack-depth-btn {
+    flex: 1;
+    min-width: 90px;
+    padding: 12px 10px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.stack-depth-btn:hover {
+    border-color: #aaa;
+}
+
+.stack-depth-btn.selected {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.sd-label {
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.sd-desc {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.stack-depth-preview {
+    display: none;
+    /* Optionnel : masque le texte redondant de preview */
+}
+
+.flop-summary {
+    text-align: center;
+    margin: 25px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px dashed #ccc;
+    color: #555;
+}
+
+.summary-chip {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 0 5px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+}
+
+.summary-chip strong {
+    font-weight: 800;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+@media (max-width: 600px) {
+    .flop-config-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+/* ══════════════════════════════════════════
+   PAGE NAVIGATION TABS (Onglets)
+══════════════════════════════════════════ */
+.page {
+    display: none;
+    /* Cache les pages par défaut */
+}
+
+.page.active {
+    display: block;
+    /* Affiche uniquement la page active */
+}
+
+.page-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.tab-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.tab-btn.active {
+    background: white;
+    color: #1e3c72;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* ══════════════════════════════════════════
+   FLOP CONFIGURATION UI
+══════════════════════════════════════════ */
+.flop-config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 25px;
+}
+
+.position-section-title {
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #555;
+}
+
+.section-badge {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.hero-badge {
+    background: #1e3c72;
+    color: white;
+}
+
+.villain-badge {
+    background: #c0392b;
+    color: white;
+}
+
+.position-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.position-btn {
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    color: #555;
+    transition: all 0.2s;
+    flex: 1;
+    min-width: 50px;
+}
+
+.position-btn:hover {
+    border-color: #aaa;
+}
+
+.position-btn.selected {
+    background: #1e3c72;
+    color: white;
+    border-color: #1e3c72;
+}
+
+.position-btn.conflict {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+    animation: shake 0.4s;
+    /* Petit effet si on choisit la même position */
+}
+
+.stack-depth-group {
+    margin-top: 30px;
+}
+
+.stack-depth-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.stack-depth-btn {
+    flex: 1;
+    min-width: 90px;
+    padding: 12px 10px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.stack-depth-btn:hover {
+    border-color: #aaa;
+}
+
+.stack-depth-btn.selected {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.sd-label {
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.sd-desc {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.stack-depth-preview {
+    display: none;
+    /* Optionnel : masque le texte redondant de preview */
+}
+
+.flop-summary {
+    text-align: center;
+    margin: 25px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px dashed #ccc;
+    color: #555;
+}
+
+.summary-chip {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 0 5px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+}
+
+.summary-chip strong {
+    font-weight: 800;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+@media (max-width: 600px) {
+    .flop-config-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
     }
 }
