@@ -21,7 +21,7 @@
         "vs CO": {
             "50bb": {
                 "3bet": "TT+, AQs+, AKo, 33-44",
-                "call": "55-99, KK-AA, A2s-AQs, K6s+, Q8s+, J8s+, T8s+, 98s, 87s, ATo-AJo, KJo+, QJo"
+                "call": "55-99, KK-AA, A2s-AQs, K6s+, Q8s+, J8s+, T8s+, 98s, 87s, ATo-AQo, KJo+, QJo"
             }
         }
     },
