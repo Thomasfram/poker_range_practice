@@ -168,7 +168,7 @@ def evaluate_hand(hole: list[Card], board: list[Card]) -> HandStrength:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class BoardTexture(str, Enum):
-    TRES_DRY    = 'TRES_DRY'
+    EXTRA_DRY    = 'TRES_DRY'
     INTERMEDIAIRE = 'INTERMEDIAIRE'
     DRAWY       = 'DRAWY'
 
@@ -193,7 +193,7 @@ def classify_board_vs_bb(board: list[Card]) -> BoardTexture:
     if pairs:
         pr = pairs[0]
         if pr >= 8:
-            return BoardTexture.TRES_DRY
+            return BoardTexture.EXTRA_DRY
         if pr <= 3:
             return BoardTexture.INTERMEDIAIRE
         return BoardTexture.DRAWY
@@ -207,10 +207,10 @@ def classify_board_vs_bb(board: list[Card]) -> BoardTexture:
     if is_monotone and r1 <= 11:
         return BoardTexture.DRAWY
     if r1 >= 13:
-        return BoardTexture.TRES_DRY if (r2 >= 6 and (r2 - r3) >= 5) else BoardTexture.INTERMEDIAIRE
+        return BoardTexture.EXTRA_DRY if (r2 >= 6 and (r2 - r3) >= 5) else BoardTexture.INTERMEDIAIRE
     if r1 >= 8:
         if not has_flush_draw and not low_connected:
-            return BoardTexture.TRES_DRY
+            return BoardTexture.EXTRA_DRY
         if highly_connected or is_monotone:
             return BoardTexture.DRAWY
         return BoardTexture.INTERMEDIAIRE
@@ -220,14 +220,14 @@ def classify_board_vs_bb(board: list[Card]) -> BoardTexture:
 def _sizing_vs_bb(texture: BoardTexture, stack_depth: int) -> int:
     deep = stack_depth >= 70
     return {
-        BoardTexture.TRES_DRY:      33 if deep else 25,
+        BoardTexture.EXTRA_DRY:      33 if deep else 25,
         BoardTexture.INTERMEDIAIRE:  50 if deep else 33,
         BoardTexture.DRAWY:          66 if deep else 50,
     }[texture]
 
 
 def _should_bet_vs_bb(strength: HandStrength, texture: BoardTexture) -> bool:
-    if texture == BoardTexture.TRES_DRY:
+    if texture == BoardTexture.EXTRA_DRY:
         return True
     return strength in {
         HandStrength.MONSTER, HandStrength.STRONG, HandStrength.MEDIUM,
@@ -372,7 +372,7 @@ def get_cbet_recommendation(
         do_bet   = _should_bet_vs_bb(strength, texture)
         sizing   = _sizing_vs_bb(texture, stack_depth) if do_bet else None
         freq_lbl = {
-            BoardTexture.TRES_DRY:      'range entier',
+            BoardTexture.EXTRA_DRY:      'range entier',
             BoardTexture.INTERMEDIAIRE: '3/4 des mains',
             BoardTexture.DRAWY:         '1/2 des mains',
         }[texture]

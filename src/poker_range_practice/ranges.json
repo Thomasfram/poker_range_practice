@@ -1,4 +1,11 @@
 {
+    "CO": {
+        "open": {
+            "100bb": "22+, A2s+, K3s+, Q5s+, J7s+, T7s+, 96s+, 86s+, 76s+, 65s+, 54s+, A8o+, KTo+, QTo+, JTo+",
+            "50bb": "33+, A2s+, K3s+, Q5s+, J7s+, T7s+, 97s+, 86s+, 76s+, 65s+, A7o+, K9o+, QTo+, JTo+",
+            "25bb": "55+, A2s+, K4s+, Q6s+, J7s+, T7s+, 97s+, 87s+, A7o+, KTo+, QTo+, JTo+"
+        }
+    },
     "BTN": {
         "open": {
             "100bb": "22+, A2s+, K2s+, Q2s+, J3s+, T4s+, 95s+, 85s+, 74s+, 64s+, 53s+, A2o+, K8o+, Q8o+, J8o+, T8o+, 98o",
@@ -7,7 +14,13 @@
         },
         "vs BB": {
             "50bb": {
-                "4bet": "AKs, AQo-AKo, TT-QQ, 33-44",
+                "4bet": "TT+, AKs, AKo",
+                "call": "22-99, A2s-A3s, A6s-AJs, K8s-KQs, Q9s-QJs, J9s-JTs, T9s, 97s+, 87s, 76s, 65s, ATo-AQo, KJo-KQo, QJo"
+            }
+        },
+        "vs CO": {
+            "50bb": {
+                "3bet": "TT+, AQs+, AKo, 33-44",
                 "call": "55-99, KK-AA, A2s-AQs, K6s+, Q8s+, J8s+, T8s+, 98s, 87s, ATo-AJo, KJo+, QJo"
             }
         }
