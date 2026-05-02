@@ -19,7 +19,14 @@ from .poker_hands import (
     Hand,
 )
 from .range_manager import RangeManager
-from .flop_strategy import Card as FlopCard, get_cbet_recommendation
+from .flop_strategy import (
+    Card as FlopCard,
+    get_cbet_recommendation,
+    get_bb_defense_recommendation,
+    classify_board_vs_bb,
+    BB_TEXTURE_LABELS,
+    BoardTexture,
+)
 
 
 class StartRequest(BaseModel):
@@ -52,6 +59,19 @@ class CheckCbetRequest(BaseModel):
     stack_depth: int
     user_action: str          # "bet" | "check"
     user_sizing: Optional[int] = None
+
+
+class BoardInfoRequest(BaseModel):
+    board_cards: list[CardData]
+
+
+class CheckBBDefenseRequest(BaseModel):
+    hero_cards: list[CardData]
+    board_cards: list[CardData]
+    villain_position: str
+    stack_depth: int
+    user_action: str           # "fold" | "call" | "raise"
+    user_sizing: Optional[float] = None  # XR multiplier if raise
 
 
 _base_dir = Path(__file__).parent
@@ -218,6 +238,47 @@ def create_app() -> FastAPI:
             "cbet_frequency": rec["cbet_frequency"],
             "hand_strength": rec["hand_strength"],
             "hand_label": rec["hand_label"],
+        }
+
+    @app.post("/api/flop/board-info")
+    def get_board_info(body: BoardInfoRequest):
+        board = [FlopCard(c.rank, c.suit) for c in body.board_cards]
+        texture = classify_board_vs_bb(board)
+        villain_sizing = {
+            BoardTexture.EXTRA_DRY:      25,
+            BoardTexture.INTERMEDIAIRE:  33,
+            BoardTexture.DRAWY:          50,
+        }[texture]
+        return {
+            'texture':        texture.value,
+            'texture_label':  BB_TEXTURE_LABELS[texture.value],
+            'villain_sizing': villain_sizing,
+        }
+
+    @app.post("/api/flop/bb-defense")
+    def check_bb_defense(body: CheckBBDefenseRequest):
+        if body.villain_position not in ('BTN', 'CO'):
+            raise HTTPException(status_code=400, detail=f"Villain non supporté: {body.villain_position}")
+
+        hole  = [FlopCard(c.rank, c.suit) for c in body.hero_cards]
+        board = [FlopCard(c.rank, c.suit) for c in body.board_cards]
+
+        rec = get_bb_defense_recommendation(hole, board, body.stack_depth)
+
+        is_correct = body.user_action == rec['action']
+        if is_correct and body.user_action == 'raise' and body.user_sizing is not None:
+            correct_mult = rec['raise_sizing'] or 0
+            is_correct = abs(body.user_sizing - correct_mult) <= 0.5
+
+        return {
+            'correct':         is_correct,
+            'correct_action':  rec['action'],
+            'correct_sizing':  rec['raise_sizing'],
+            'texture':         rec['texture'],
+            'texture_label':   rec['texture_label'],
+            'villain_sizing':  rec['villain_sizing'],
+            'hand_strength':   rec['hand_strength'],
+            'hand_label':      rec['hand_label'],
         }
 
     # Static files mounted last so API routes take precedence

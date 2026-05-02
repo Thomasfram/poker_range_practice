@@ -23,6 +23,7 @@ const flopState = {
 
 const flopPractice = {
     heroHand: [],
+    villainHand: [],
     communityCards: [],
     stats: { correct: 0, total: 0 },
 };
@@ -175,18 +176,13 @@ function initFlopNavigation() {
 function startFlopPractice(configScr, practiceScr) {
     const { hero, villain, stackDepth } = flopState;
 
-    // Update labels
     document.getElementById('flop-config-display').textContent =
         `${hero} vs ${villain} — ${stackDepth.label}`;
     document.getElementById('hero-pos-label').textContent = hero;
     document.getElementById('villain-pos-label').textContent = villain;
 
-    // Reset stats
     flopPractice.stats = { correct: 0, total: 0 };
     updateFlopStats();
-
-    // Build action buttons (placeholder for now — bet/check/fold)
-    buildActionButtons();
 
     configScr.classList.remove('active');
     practiceScr.classList.add('active');
@@ -217,37 +213,48 @@ function shuffle(arr) {
 
 async function dealFlopHand() {
     const { hero, villain, stackDepth } = flopState;
+    const isBBDefense = hero === 'BB';
+
+    // Reset UI
+    const feedback = document.getElementById('flop-feedback');
+    const nextBtn = document.getElementById('flop-next-btn');
+    if (feedback) feedback.className = 'feedback hidden';
+    if (nextBtn) nextBtn.style.display = 'none';
 
     try {
-        // 1. Demander une main IN RANGE au backend
         const res = await fetch('/api/flop/hero-hand', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ hero, villain, stackDepth: stackDepth.value })
         });
         const data = await res.json();
-        const abstractHand = data.hand; // ex: "AKs", "77", "T9o"
+        const abstractHand = data.hand;
 
-        // 2. Générer un paquet neuf
         let deck = buildDeck();
-
-        // 3. Extraire les cartes réelles correspondantes et les retirer du paquet
         flopPractice.heroHand = extractCardsForHand(abstractHand, deck);
-
-        // 4. Mélanger le paquet restant
         deck = shuffle(deck);
 
-        let i = 0;
-        // On passe 2 cartes face cachée pour le villain
-        i += 2;
-        // On brûle 1 carte
-        i++;
-        // On tire le Flop
-        flopPractice.communityCards = [deck[i++], deck[i++], deck[i++]];
+        if (isBBDefense) {
+            flopPractice.villainHand = [deck.shift(), deck.shift()];
+        } else {
+            flopPractice.villainHand = [];
+            deck.shift(); deck.shift(); // skip villain slots
+        }
+
+        deck.shift(); // burn
+        flopPractice.communityCards = [deck.shift(), deck.shift(), deck.shift()];
 
         renderHeroCards();
         renderCommunityCards();
-        resetActionArea();
+
+        if (isBBDefense) {
+            renderVillainCardsFaceDown();
+            await showBBVillainBet();
+        } else {
+            renderVillainCardsFaceDown();
+            buildActionButtons();
+            document.getElementById('flop-situation').textContent = 'Bet ou Check ?';
+        }
 
     } catch (error) {
         console.error("Erreur lors de la distribution du flop:", error);
@@ -520,8 +527,195 @@ function resetActionArea() {
     if (feedback) feedback.className = 'feedback hidden';
     if (nextBtn) nextBtn.style.display = 'none';
 
-    buildActionButtons();
-    document.getElementById('flop-situation').textContent = 'Bet ou Check ?';
+    if (flopState.hero === 'BB') {
+        buildBBDefenseButtons();
+        document.getElementById('flop-situation').textContent = 'Fold, Call ou Check-Raise ?';
+    } else {
+        buildActionButtons();
+        document.getElementById('flop-situation').textContent = 'Bet ou Check ?';
+    }
+}
+
+// ─── Villain Card Rendering ───────────────────
+
+function renderVillainCardsFaceDown() {
+    const container = document.getElementById('villain-cards');
+    if (!container) return;
+    container.innerHTML = `
+        <div class="card card-back"></div>
+        <div class="card card-back"></div>
+    `;
+}
+
+function revealVillainCards() {
+    const cards = flopPractice.villainHand;
+    if (!cards || cards.length < 2) return;
+    const container = document.getElementById('villain-cards');
+    const cardEls = container.querySelectorAll('.card');
+    cards.forEach((card, idx) => {
+        const el = cardEls[idx];
+        if (!el || !card) return;
+        const isRed = RED_SUITS.has(card.suit);
+        el.className = `card hero-card deal-anim${isRed ? ' red-suit' : ''}`;
+        el.style.animationDelay = `${idx * 0.1}s`;
+        el.style.color = isRed ? '#d32f2f' : '#111';
+        el.innerHTML = `
+            <span class="card-rank">${cardRankDisplay(card.rank)}</span>
+            <span class="card-suit-icon">${card.suit}</span>
+        `;
+    });
+}
+
+// ─── BB Defense Mode ─────────────────────────
+
+async function showBBVillainBet() {
+    const { stackDepth } = flopState;
+    document.getElementById('flop-situation').textContent = 'Chargement…';
+
+    try {
+        const res = await fetch('/api/flop/board-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                board_cards: flopPractice.communityCards.map(c => ({ rank: c.rank, suit: c.suit })),
+            }),
+        });
+        const data = await res.json();
+
+        document.getElementById('flop-pot-label').textContent =
+            `Pot: ${stackDepth.value * 2}bb — Villain cbet ${data.villain_sizing}% du pot`;
+        document.getElementById('flop-situation').textContent = 'Fold, Call ou Check-Raise ?';
+
+    } catch (_) {
+        document.getElementById('flop-situation').textContent = 'Fold, Call ou Check-Raise ?';
+    }
+
+    buildBBDefenseButtons();
+}
+
+function buildBBDefenseButtons() {
+    const group = document.getElementById('flop-btn-group');
+    if (!group) return;
+    group.innerHTML = '';
+    flopTurn.pendingAction = null;
+
+    group.appendChild(makeActionBtn('Fold',         '#c0392b', () => selectBBDefenseAction('fold')));
+    group.appendChild(makeActionBtn('Call',         '#27ae60', () => selectBBDefenseAction('call')));
+    group.appendChild(makeActionBtn('Check-Raise',  '#8e44ad', () => selectBBDefenseAction('raise')));
+}
+
+function selectBBDefenseAction(action) {
+    flopTurn.pendingAction = action;
+    document.querySelectorAll('#flop-btn-group > .flop-action-btn').forEach(btn => {
+        btn.style.opacity = '0.4';
+    });
+
+    if (action === 'raise') {
+        showBBRaiseSizingButtons();
+    } else {
+        submitBBDefense(action, null);
+    }
+}
+
+const BB_RAISE_SIZINGS = [2.5, 2.75, 3, 3.5, 4, 5];
+
+function showBBRaiseSizingButtons() {
+    const group = document.getElementById('flop-btn-group');
+    const old = group.querySelector('.sizing-row');
+    if (old) old.remove();
+
+    const row = document.createElement('div');
+    row.className = 'sizing-row';
+    row.style.cssText = 'display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap;';
+
+    BB_RAISE_SIZINGS.forEach(mult => {
+        const btn = document.createElement('button');
+        btn.className = 'flop-action-btn sizing-btn';
+        btn.textContent = `${mult}x`;
+        btn.style.cssText = 'background:#8e44ad;min-width:70px;padding:8px 14px;font-size:0.9rem;';
+        btn.addEventListener('click', () => submitBBDefense('raise', mult));
+        row.appendChild(btn);
+    });
+
+    group.appendChild(row);
+    document.getElementById('flop-situation').textContent = 'Choisissez le sizing du check-raise :';
+}
+
+async function submitBBDefense(action, sizing) {
+    document.querySelectorAll('.flop-action-btn').forEach(btn => btn.disabled = true);
+
+    const { villain, stackDepth } = flopState;
+    const payload = {
+        hero_cards:       flopPractice.heroHand.map(c => ({ rank: c.rank, suit: c.suit })),
+        board_cards:      flopPractice.communityCards.map(c => ({ rank: c.rank, suit: c.suit })),
+        villain_position: villain,
+        stack_depth:      stackDepth.value,
+        user_action:      action,
+        user_sizing:      sizing,
+    };
+
+    try {
+        const res = await fetch('/api/flop/bb-defense', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Erreur serveur');
+
+        revealVillainCards();
+        showBBDefenseFeedback(data, action, sizing);
+
+    } catch (err) {
+        console.error('bb-defense error:', err);
+        document.getElementById('flop-feedback').className = 'feedback incorrect';
+        document.getElementById('flop-feedback').innerHTML =
+            `<div class="feedback-title">Erreur : ${err.message}</div>`;
+        document.getElementById('flop-next-btn').style.display = 'block';
+    }
+}
+
+function showBBDefenseFeedback(data, userAction, userSizing) {
+    const feedback = document.getElementById('flop-feedback');
+    const nextBtn  = document.getElementById('flop-next-btn');
+
+    const isCorrect = data.correct;
+    feedback.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+
+    const textureColors = {
+        TRES_DRY:      '#27ae60',
+        INTERMEDIAIRE: '#e67e22',
+        DRAWY:         '#c0392b',
+    };
+    const tc = textureColors[data.texture] || '#888';
+    const textureBadge = `<span style="background:${tc};color:#fff;padding:2px 8px;border-radius:12px;font-size:0.8rem;font-weight:700;">${data.texture_label}</span>`;
+
+    const actionLabels = { fold: 'Fold', call: 'Call', raise: 'Check-Raise' };
+    const correctLabel = data.correct_sizing
+        ? `${actionLabels[data.correct_action]} ${data.correct_sizing}x`
+        : actionLabels[data.correct_action];
+    const userLabel = userSizing
+        ? `${actionLabels[userAction] || userAction} ${userSizing}x`
+        : (actionLabels[userAction] || userAction);
+
+    feedback.innerHTML = `
+        <div class="feedback-title">${isCorrect ? '✓ Correct !' : '✗ Incorrect'}</div>
+        <div class="feedback-detail" style="margin-top:6px;">
+            Board : ${textureBadge} — Villain cbet ${data.villain_sizing}% du pot
+        </div>
+        <div class="feedback-detail" style="margin-top:4px;">
+            Ta main : <em>${data.hand_label}</em>
+        </div>
+        <div class="feedback-detail" style="margin-top:4px;">
+            ${isCorrect ? '' : `Bonne réponse : <strong>${correctLabel}</strong><br>`}Tu as joué : <strong>${userLabel}</strong>
+        </div>
+    `;
+
+    if (isCorrect) flopPractice.stats.correct++;
+    flopPractice.stats.total++;
+    updateFlopStats();
+
+    if (nextBtn) nextBtn.style.display = 'block';
 }
 
 function updateFlopStats() {
