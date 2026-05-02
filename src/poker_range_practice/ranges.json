@@ -20,8 +20,9 @@
         },
         "vs CO": {
             "50bb": {
-                "3bet": "TT+, AQs+, AKo, 33-44",
-                "call": "55-99, KK-AA, A2s-AQs, K6s+, Q8s+, J8s+, T8s+, 98s, 87s, ATo-AQo, KJo+, QJo"
+                "3bet": "TT+, AQs+, AKo",
+                "3bet_l": "A8o-A9o, KTo, QTo, JTo, T8s, J8s, Q8s, K6s-K7s, A4s-A5s, 54s",
+                "call": "22-99, A2s-A3s, A6s-AJs, K8s-KQs, Q9s-QJs, J9s-JTs, T9s+, 97s+, 87s, 65s, ATo-AQo, KJo-KQo, QJo"
             }
         }
     },
