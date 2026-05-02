@@ -65,6 +65,11 @@ class BoardInfoRequest(BaseModel):
     board_cards: list[CardData]
 
 
+class BBDealRequest(BaseModel):
+    villain_position: str
+    stack_depth: int
+
+
 class CheckBBDefenseRequest(BaseModel):
     hero_cards: list[CardData]
     board_cards: list[CardData]
@@ -77,6 +82,52 @@ class CheckBBDefenseRequest(BaseModel):
 _base_dir = Path(__file__).parent
 _range_manager = RangeManager(str(_base_dir / "ranges.json"))
 _all_hands = generate_all_hands()
+
+_ALL_RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
+_ALL_SUITS = ['♠', '♥', '♦', '♣']
+
+
+def _deal_concrete_hand(
+    abstract: str,
+    deck: list[tuple[str, str]],
+) -> tuple[Optional[list[tuple[str, str]]], list[tuple[str, str]]]:
+    """Instantiate an abstract hand (e.g. 'AKs') from `deck`. Returns (cards, new_deck) or (None, deck)."""
+    deck = list(deck)
+    rank1 = abstract[0]
+    rank2 = abstract[1] if len(abstract) >= 2 else abstract[0]
+    hand_type = abstract[2] if len(abstract) > 2 else 'pair'
+
+    if hand_type == 'pair':
+        opts = [(r, s) for r, s in deck if r == rank1]
+        if len(opts) < 2:
+            return None, deck
+        c1, c2 = random.sample(opts, 2)
+        deck.remove(c1)
+        deck.remove(c2)
+        return [c1, c2], deck
+
+    if hand_type == 's':
+        suit_order = random.sample(_ALL_SUITS, 4)
+        for suit in suit_order:
+            c1 = next(((r, s) for r, s in deck if r == rank1 and s == suit), None)
+            c2 = next(((r, s) for r, s in deck if r == rank2 and s == suit), None)
+            if c1 and c2:
+                deck.remove(c1)
+                deck.remove(c2)
+                return [c1, c2], deck
+        return None, deck
+
+    # offsuit
+    c1_opts = [(r, s) for r, s in deck if r == rank1]
+    random.shuffle(c1_opts)
+    for c1 in c1_opts:
+        c2_opts = [(r, s) for r, s in deck if r == rank2 and s != c1[1]]
+        if c2_opts:
+            c2 = random.choice(c2_opts)
+            deck.remove(c1)
+            deck.remove(c2)
+            return [c1, c2], deck
+    return None, deck
 
 
 def create_app() -> FastAPI:
@@ -238,6 +289,93 @@ def create_app() -> FastAPI:
             "cbet_frequency": rec["cbet_frequency"],
             "hand_strength": rec["hand_strength"],
             "hand_label": rec["hand_label"],
+        }
+
+    @app.post("/api/flop/bb-deal")
+    def bb_deal(body: BBDealRequest):
+        if body.villain_position not in ('BTN', 'CO'):
+            raise HTTPException(status_code=400, detail="Villain doit être BTN ou CO")
+
+        stack_str = f"{body.stack_depth}bb"
+
+        # BB's calling range
+        bb_action = f"vs {body.villain_position}"
+        bb_range = _range_manager.get_range('BB', bb_action, stack_str) or {}
+        valid_bb = [str(h) for h, act in bb_range.items() if act != 'fold']
+        if not valid_bb:
+            valid_bb = [str(h) for h in _all_hands]
+
+        # Villain's opening range
+        villain_range = _range_manager.get_range(body.villain_position, 'open', stack_str) or {}
+        valid_villain = [str(h) for h, act in villain_range.items() if act != 'fold']
+        if not valid_villain:
+            valid_villain = [str(h) for h in _all_hands]
+
+        # Build and shuffle deck
+        deck: list[tuple[str, str]] = [(r, s) for r in _ALL_RANKS for s in _ALL_SUITS]
+        random.shuffle(deck)
+
+        # Deal BB hand
+        bb_abstract = random.choice(valid_bb)
+        bb_cards, deck = _deal_concrete_hand(bb_abstract, deck)
+        if bb_cards is None:
+            bb_abstract = random.choice(valid_bb)
+            bb_cards, deck = _deal_concrete_hand(bb_abstract, deck)
+        if bb_cards is None:
+            bb_cards = [deck.pop(0), deck.pop(0)]
+
+        # Burn + deal flop
+        deck.pop(0)
+        flop = [deck.pop(0), deck.pop(0), deck.pop(0)]
+        flop_cards = [FlopCard(r, s) for r, s in flop]
+
+        # Board texture for villain cbet sizing
+        texture = classify_board_vs_bb(flop_cards)
+        villain_sizing = {
+            BoardTexture.EXTRA_DRY:      25,
+            BoardTexture.INTERMEDIAIRE:  33,
+            BoardTexture.DRAWY:          50,
+        }[texture]
+
+        # Filter villain range to hands that cbet on this flop
+        cbet_candidates: list[tuple[str, list[tuple[str, str]]]] = []
+        for villain_abstract in valid_villain:
+            v_cards, _ = _deal_concrete_hand(villain_abstract, list(deck))
+            if v_cards is None:
+                continue
+            v_hole = [FlopCard(r, s) for r, s in v_cards]
+            try:
+                rec = get_cbet_recommendation(
+                    v_hole, flop_cards, body.villain_position, 'BB', body.stack_depth
+                )
+                if rec['should_bet']:
+                    cbet_candidates.append((villain_abstract, v_cards))
+            except Exception:
+                pass
+
+        if cbet_candidates:
+            villain_abstract, villain_cards = random.choice(cbet_candidates)
+        else:
+            # Fallback: any instantiable villain hand
+            villain_abstract, villain_cards = None, None
+            random.shuffle(valid_villain)
+            for va in valid_villain:
+                vc, _ = _deal_concrete_hand(va, list(deck))
+                if vc is not None:
+                    villain_abstract, villain_cards = va, vc
+                    break
+            if villain_cards is None:
+                villain_cards = [deck.pop(0), deck.pop(0)]
+
+        return {
+            'bb_hand':         bb_abstract,
+            'bb_cards':        [{'rank': r, 'suit': s} for r, s in bb_cards],
+            'flop_cards':      [{'rank': r, 'suit': s} for r, s in flop],
+            'villain_hand':    villain_abstract,
+            'villain_cards':   [{'rank': r, 'suit': s} for r, s in villain_cards],
+            'villain_sizing':  villain_sizing,
+            'texture':         texture.value,
+            'texture_label':   BB_TEXTURE_LABELS[texture.value],
         }
 
     @app.post("/api/flop/board-info")

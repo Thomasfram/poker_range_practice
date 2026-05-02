@@ -215,42 +215,49 @@ async function dealFlopHand() {
     const { hero, villain, stackDepth } = flopState;
     const isBBDefense = hero === 'BB';
 
-    // Reset UI
     const feedback = document.getElementById('flop-feedback');
-    const nextBtn = document.getElementById('flop-next-btn');
+    const nextBtn  = document.getElementById('flop-next-btn');
     if (feedback) feedback.className = 'feedback hidden';
-    if (nextBtn) nextBtn.style.display = 'none';
+    if (nextBtn)  nextBtn.style.display = 'none';
+    document.getElementById('flop-pot-label').textContent = '';
 
     try {
-        const res = await fetch('/api/flop/hero-hand', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ hero, villain, stackDepth: stackDepth.value })
-        });
-        const data = await res.json();
-        const abstractHand = data.hand;
-
-        let deck = buildDeck();
-        flopPractice.heroHand = extractCardsForHand(abstractHand, deck);
-        deck = shuffle(deck);
-
         if (isBBDefense) {
-            flopPractice.villainHand = [deck.shift(), deck.shift()];
-        } else {
-            flopPractice.villainHand = [];
-            deck.shift(); deck.shift(); // skip villain slots
-        }
+            const res = await fetch('/api/flop/bb-deal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ villain_position: villain, stack_depth: stackDepth.value }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || 'Erreur serveur');
 
-        deck.shift(); // burn
-        flopPractice.communityCards = [deck.shift(), deck.shift(), deck.shift()];
+            flopPractice.heroHand        = data.bb_cards;
+            flopPractice.villainHand     = data.villain_cards;
+            flopPractice.communityCards  = data.flop_cards;
 
-        renderHeroCards();
-        renderCommunityCards();
-
-        if (isBBDefense) {
+            renderHeroCards();
+            renderCommunityCards();
             renderVillainCardsFaceDown();
-            await showBBVillainBet();
+            showBBVillainBet(data.villain_sizing, stackDepth.value);
+
         } else {
+            const res = await fetch('/api/flop/hero-hand', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hero, villain, stackDepth: stackDepth.value }),
+            });
+            const data = await res.json();
+
+            let deck = buildDeck();
+            flopPractice.heroHand = extractCardsForHand(data.hand, deck);
+            flopPractice.villainHand = [];
+            deck = shuffle(deck);
+            deck.shift(); deck.shift(); // skip villain slots
+            deck.shift();               // burn
+            flopPractice.communityCards = [deck.shift(), deck.shift(), deck.shift()];
+
+            renderHeroCards();
+            renderCommunityCards();
             renderVillainCardsFaceDown();
             buildActionButtons();
             document.getElementById('flop-situation').textContent = 'Bet ou Check ?';
@@ -568,28 +575,10 @@ function revealVillainCards() {
 
 // ─── BB Defense Mode ─────────────────────────
 
-async function showBBVillainBet() {
-    const { stackDepth } = flopState;
-    document.getElementById('flop-situation').textContent = 'Chargement…';
-
-    try {
-        const res = await fetch('/api/flop/board-info', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                board_cards: flopPractice.communityCards.map(c => ({ rank: c.rank, suit: c.suit })),
-            }),
-        });
-        const data = await res.json();
-
-        document.getElementById('flop-pot-label').textContent =
-            `Pot: ${stackDepth.value * 2}bb — Villain cbet ${data.villain_sizing}% du pot`;
-        document.getElementById('flop-situation').textContent = 'Fold, Call ou Check-Raise ?';
-
-    } catch (_) {
-        document.getElementById('flop-situation').textContent = 'Fold, Call ou Check-Raise ?';
-    }
-
+function showBBVillainBet(villainSizing, stackDepthValue) {
+    document.getElementById('flop-pot-label').textContent =
+        `Pot: ${stackDepthValue * 2}bb — Villain cbet ${villainSizing}% du pot`;
+    document.getElementById('flop-situation').textContent = 'Fold, Call ou Check-Raise ?';
     buildBBDefenseButtons();
 }
 
