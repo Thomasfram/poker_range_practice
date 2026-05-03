@@ -1,4 +1,15 @@
 {
+    "_scenario_labels": {
+        "CO/open":        "Folds jusqu'à vous en CO",
+        "BTN/open":       "Folds jusqu'à vous au BTN",
+        "BTN/vs CO":      "CO a ouvert, vous êtes BTN",
+        "BTN/vs BB":      "Vous avez ouvert au BTN, BB vous 3bet",
+        "SB/open_limp":   "Folds jusqu'à vous en SB",
+        "BB/vs BTN":      "BTN a ouvert, vous êtes BB",
+        "BB/vs CO":       "CO a ouvert, vous êtes BB",
+        "BB/vs sb_limp":  "SB a limp, vous êtes BB",
+        "BB/vs sb_raise": "SB a ouvert, vous êtes BB"
+    },
     "CO": {
         "open": {
             "100bb": "22+, A2s+, K3s+, Q5s+, J7s+, T7s+, 96s+, 86s+, 76s+, 65s+, 54s+, A8o+, KTo+, QTo+, JTo+",

@@ -29,6 +29,17 @@ from .flop import (
 )
 
 
+class EvalStartRequest(BaseModel):
+    position: str
+    stack_depth: str
+
+
+class EvalCheckRequest(BaseModel):
+    hand: str
+    scenario_action: str
+    user_action: str
+
+
 class StartRequest(BaseModel):
     position: str
     action: str
@@ -418,6 +429,71 @@ def create_app() -> FastAPI:
             'hand_strength':   rec['hand_strength'],
             'hand_label':      rec['hand_label'],
         }
+
+    # ── Eval mode ──────────────────────────────────────────────────────────────
+
+    @app.get("/api/eval/stack-depths/{position}")
+    def eval_stack_depths(position: str):
+        return _range_manager.get_eval_stack_depths(position)
+
+    @app.post("/api/eval/start")
+    def eval_start(body: EvalStartRequest, request: Request):
+        scenarios = _range_manager.get_eval_scenarios(body.position, body.stack_depth)
+        if not scenarios:
+            raise HTTPException(status_code=404, detail="Aucun scénario disponible")
+        request.session["eval_config"] = {
+            "position": body.position,
+            "stack_depth": body.stack_depth,
+        }
+        return {"success": True, "scenario_count": len(scenarios)}
+
+    @app.get("/api/eval/next-hand")
+    def eval_next_hand(request: Request):
+        config = request.session.get("eval_config")
+        if config is None:
+            raise HTTPException(status_code=400, detail="No active eval session")
+        scenarios = _range_manager.get_eval_scenarios(config["position"], config["stack_depth"])
+        if not scenarios:
+            raise HTTPException(status_code=400, detail="No scenarios available")
+        scenario = random.choice(scenarios)
+        hand = random.choice(_all_hands)
+        return {
+            "hand": str(hand),
+            "scenario_action":    scenario["action"],
+            "scenario_label":     scenario["label"],
+            "available_actions":  scenario["available_actions"],
+        }
+
+    @app.post("/api/eval/check-answer")
+    def eval_check_answer(body: EvalCheckRequest, request: Request):
+        config = request.session.get("eval_config")
+        if config is None:
+            raise HTTPException(status_code=400, detail="No active eval session")
+        current_range = _range_manager.get_range(
+            config["position"], body.scenario_action, config["stack_depth"]
+        )
+        if current_range is None:
+            raise HTTPException(status_code=400, detail="Range not found")
+
+        hand = Hand(body.hand)
+        actual_action = current_range.get(hand, "fold")
+        is_correct = body.user_action == actual_action
+
+        response = {
+            "correct":      is_correct,
+            "actual_action": actual_action,
+            "user_action":  body.user_action,
+        }
+        if not is_correct and actual_action == "fold":
+            closest = find_closest_hand_in_range(hand, set(current_range.keys()))
+            if closest:
+                response["closest_hand"] = str(closest)
+        if is_correct and actual_action != "fold":
+            specific = [h for h, act in current_range.items() if act == actual_action]
+            bottom = find_bottom_of_range_category(hand, specific)
+            if bottom:
+                response["bottom_of_range"] = str(bottom)
+        return response
 
     # Static files mounted last so API routes take precedence
     app.mount("/", StaticFiles(directory=str(_base_dir / "static"), html=True), name="static")

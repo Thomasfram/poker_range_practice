@@ -41,13 +41,21 @@
                     <h2>Select Configuration</h2>
 
                     <div class="form-group">
+                        <label>Mode</label>
+                        <div class="mode-toggle">
+                            <button class="mode-btn active" id="mode-classic" data-mode="classic">Classique</button>
+                            <button class="mode-btn" id="mode-eval" data-mode="eval">Évaluation</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
                         <label for="position">Position</label>
                         <select id="position" class="select-input">
                             <option value="">Choose position...</option>
                         </select>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="action-form-group">
                         <label for="action">Action</label>
                         <select id="action" class="select-input" disabled>
                             <option value="">Choose action...</option>
@@ -70,12 +78,14 @@
                 <div class="practice-card">
                     <div class="config-display" id="config-display"></div>
 
+                    <div class="scenario-label hidden" id="scenario-label"></div>
+
                     <div class="hand-display">
                         <div class="hand-label">Your Hand:</div>
                         <div class="hand-value" id="current-hand">AKs</div>
                     </div>
 
-                    <div class="question">Is this hand in range?</div>
+                    <div class="question" id="preflop-question">Is this hand in range?</div>
 
                     <div class="button-group">
                         <!-- Buttons are generated dynamically by app.js -->

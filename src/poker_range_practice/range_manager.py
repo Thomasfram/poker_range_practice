@@ -64,8 +64,30 @@ class RangeManager:
             return None
     
     def get_available_positions(self):
-        """Get list of available positions."""
-        return list(self.ranges.keys())
+        """Get list of available positions (excludes metadata keys starting with _)."""
+        return [k for k in self.ranges.keys() if not k.startswith('_')]
+
+    def get_eval_stack_depths(self, position: str) -> list[str]:
+        """All stack depths that have at least one scenario for this position."""
+        depths: set[str] = set()
+        for stack_data in self.ranges.get(position, {}).values():
+            if isinstance(stack_data, dict):
+                depths.update(stack_data.keys())
+        return sorted(depths)
+
+    def get_eval_scenarios(self, position: str, stack_depth: str) -> list[dict]:
+        """All scenarios available for this position/stack depth in eval mode."""
+        labels = self.ranges.get('_scenario_labels', {})
+        scenarios = []
+        for action, stack_data in self.ranges.get(position, {}).items():
+            if not isinstance(stack_data, dict) or stack_depth not in stack_data:
+                continue
+            scenarios.append({
+                'action':            action,
+                'label':             labels.get(f'{position}/{action}', action),
+                'available_actions': self.get_available_range_actions(position, action, stack_depth),
+            })
+        return scenarios
     
     def get_available_actions(self, position):
         """Get list of available actions for a position."""
