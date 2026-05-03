@@ -1,77 +1,1224 @@
 {
     "_scenario_labels": {
-        "CO/open":        "Folds jusqu'à vous en CO",
-        "BTN/open":       "Folds jusqu'à vous au BTN",
-        "BTN/vs CO":      "CO a ouvert, vous êtes BTN",
-        "BTN/vs BB":      "Vous avez ouvert au BTN, BB vous 3bet",
-        "SB/open_limp":   "Folds jusqu'à vous en SB",
-        "BB/vs BTN":      "BTN a ouvert, vous êtes BB",
-        "BB/vs CO":       "CO a ouvert, vous êtes BB",
-        "BB/vs sb_limp":  "SB a limp, vous êtes BB",
-        "BB/vs sb_raise": "SB a ouvert, vous êtes BB"
+    "HJ/open": "Folds jusqu'à vous en HJ",
+    "HJ/vs BB": "Vous avez ouvert en HJ, BB vous 3bet",
+    "HJ/vs BTN": "Vous avez ouvert en HJ, BTN vous 3bet",
+    "HJ/vs CO": "Vous avez ouvert en HJ, CO vous 3bet",
+    "HJ/vs LJ": "LJ a ouvert, vous êtes HJ",
+    "HJ/vs SB": "Vous avez ouvert en HJ, SB vous 3bet",
+    "LJ/open": "Folds jusqu'à vous en LJ",
+    "LJ/vs BB": "Vous avez ouvert en LJ, BB vous 3bet",
+    "LJ/vs BTN": "Vous avez ouvert en LJ, BTN vous 3bet",
+    "LJ/vs CO": "Vous avez ouvert en LJ, CO vous 3bet",
+    "LJ/vs HJ": "Vous avez ouvert en LJ, HJ vous 3bet",
+    "LJ/vs SB": "Vous avez ouvert en LJ, SB vous 3bet",
+    "CO/open": "Folds jusqu'à vous en CO",
+    "CO/vs BB": "Vous avez ouvert en CO, BB vous 3bet",
+    "CO/vs BTN": "Vous avez ouvert en CO, BTN vous 3bet",
+    "CO/vs HJ": "HJ a ouvert, vous êtes CO",
+    "CO/vs LJ": "LJ a ouvert, vous êtes CO",
+    "CO/vs SB": "Vous avez ouvert en CO, SB vous 3bet",
+    "BTN/open": "Folds jusqu'à vous au BTN",
+    "BTN/vs BB": "Vous avez ouvert au BTN, BB vous 3bet",
+    "BTN/vs CO": "CO a ouvert, vous êtes BTN",
+    "BTN/vs HJ": "HJ a ouvert, vous êtes BTN",
+    "BTN/vs LJ": "LJ a ouvert, vous êtes BTN",
+    "BTN/vs SB": "Vous avez ouvert au BTN, SB vous 3bet",
+    "SB/open": "Folds jusqu'à vous en SB, vous ouvrez",
+    "SB/open_limp": "Folds jusqu'à vous en SB",
+    "SB/vs BB": "Vous avez ouvert en SB, BB vous 3bet",
+    "SB/vs BTN": "BTN a ouvert, vous êtes SB",
+    "SB/vs CO": "CO a ouvert, vous êtes SB",
+    "SB/vs HJ": "HJ a ouvert, vous êtes SB",
+    "SB/vs LJ": "LJ a ouvert, vous êtes SB",
+    "BB/vs BTN": "BTN a ouvert, vous êtes BB",
+    "BB/vs CO": "CO a ouvert, vous êtes BB",
+    "BB/vs HJ": "HJ a ouvert, vous êtes BB",
+    "BB/vs LJ": "LJ a ouvert, vous êtes BB",
+    "BB/vs SB": "SB a ouvert, vous êtes BB",
+    "BB/vs sb_limp": "SB a limp, vous êtes BB",
+    "BB/vs sb_raise": "SB a ouvert, vous êtes BB"
+  },
+    "HJ": {
+        "open": {
+            "100bb": "33+, A2s+, K6s+, Q8s+, J8s+, T8s+, 97s+, 87s, ATo+, KTo+, QJo",
+            "50bb": "22+, A2s+, K5s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 76s, 65s, A8o+, KTo+, QTo+, JTo",
+            "25bb": "55+, A2s+, K6s+, Q7s+, J8s+, T8s+, 97s+, 87s, A9o+, KTo+, QTo+, JTo",
+            "20bb": "55+, A3s+, K7s+, Q8s+, J8s+, T8s+, 98s, A9o+, KJo+, QJo",
+            "17bb": {
+                "raise_allin": "44-55, JTs",
+                "raise": "66+, A2s+, K7s+, Q8s+, J9s, T9s, A8o+, KTo+, QJo"
+            },
+            "15bb": {
+                "raise_allin": "33-77, A4s-A5s, KTs, QTs+, JTs, A9o-AJo, KQo",
+                "raise": "88+, A6s+, A2s-A3s, KJs+, K7s-K9s, Q8s-Q9s, J9s, T9s, AQo+, A8o, KTo-KJo, QJo"
+            },
+            "12bb": {
+                "raise_allin": "22-TT, A2s-AJs, K9s+, Q9s+, J9s+, T9s, A7o+, KJo+, QJo",
+                "raise": "JJ+, AQs+, K8s, KTo"
+            },
+            "10bb": {
+                "raise_allin": "22-QQ, A2s+, K9s+, Q9s+, J9s+, T8s+, 98s, A4o+, KTo+, QJo, JTo",
+                "raise": "KK+, QTo"
+            }
+        },
+        "vs BB": {
+            "100bb": {
+                "4bet": "AA+",
+                "call": "88-KK, A9s+, A5s, KTs+, QTs+, JTs, AQo+",
+                "3bet_light": "AJo"
+            },
+            "50bb": {
+                "raise_allin": "JJ-QQ, AKs, A5s, AKo",
+                "call": "KK+, 55-TT, A9s-AQs, K9s+, QTs+, JTs, T9s, AJo-AQo, KQo"
+            },
+            "25bb": {
+                "raise_allin": "77-QQ, AQs+, KQs, AQo+",
+                "call": "KK+, 66, A8s-AJs, A5s, KTs-KJs, QTs+, JTs, AJo, KQo"
+            },
+            "20bb": "55+, A9s+, KQs, ATo+",
+            "17bb": {
+                "call": "44+, A8s+, KJs+, ATo+"
+            },
+            "15bb": {
+                "call": "44+, A8s+, KJs+, ATo+"
+            },
+            "12bb": {
+                "call": "44+, A7s+, KTs+, QJs, A9o+"
+            },
+            "10bb": {
+                "call": "44+, A7s+, KTs+, QTs+, JTs, A9o+, KQo"
+            }
+        },
+        "vs BTN": {
+            "100bb": {
+                "4bet": "QQ+, AKs, AKo",
+                "call": "77-JJ, A8s-AQs, A4s, KTs+, QTs+, JTs, T9s, AQo",
+                "3bet_light": "A5s, K9s, AJo"
+            },
+            "50bb": {
+                "raise_allin": "TT-QQ, A4s-A5s, AKo",
+                "4bet": "KK+, AKs",
+                "call": "33-99, A6s-AQs, A2s-A3s, K9s+, Q9s+, J9s+, T9s, 87s, 76s, 65s, 54s, AJo-AQo, KQo",
+                "3bet_light": "ATo"
+            },
+            "25bb": {
+                "raise_allin": "44-KK, AQs+, A4s-A5s, AQo+",
+                "call": "AA+, A7s-AJs, A3s, KTs+, QTs+, JTs, 87s, 76s, 65s, AJo, KQo"
+            },
+            "20bb": "55+, A8s+, KQs, ATo+",
+            "17bb": {
+                "call": "44+, A8s+, KJs+, ATo+, KQo"
+            },
+            "15bb": {
+                "call": "44+, A8s+, KJs+, ATo+, KQo"
+            },
+            "12bb": {
+                "call": "33+, A7s+, A5s, KTs+, QTs+, JTs, A9o+, KQo"
+            },
+            "10bb": {
+                "call": "33+, A3s+, KTs+, QTs+, JTs, A8o+, KJo+"
+            }
+        },
+        "vs CO": {
+            "100bb": {
+                "4bet": "QQ+, AKs, AKo",
+                "call": "77-JJ, A9s-AQs, KTs+, QTs+, JTs, T9s, AQo",
+                "3bet_light": "A4s-A5s, K9s, AJo"
+            },
+            "50bb": {
+                "raise_allin": "TT-QQ, A4s-A5s, AKo",
+                "4bet": "KK+, AKs",
+                "call": "33-99, A9s-AQs, A6s-A7s, A3s, K9s+, Q9s+, J9s+, T9s, 76s, 65s, 54s, AJo-AQo, KQo",
+                "3bet_light": "ATo"
+            },
+            "25bb": {
+                "raise_allin": "33-KK, AKs, A5s, KQs, AQo+",
+                "call": "AA+, A8s-AQs, A3s-A4s, KTs-KJs, QTs+, JTs, 76s, 65s, 54s, AJo, KQo"
+            },
+            "20bb": "55+, A9s+, KQs, ATo+",
+            "17bb": {
+                "call": "44+, A8s+, KJs+, ATo+, KQo"
+            },
+            "15bb": {
+                "call": "44+, A8s+, KJs+, ATo+, KQo"
+            },
+            "12bb": {
+                "call": "33+, A7s+, A5s, KTs+, QJs, A9o+, KQo"
+            },
+            "10bb": {
+                "call": "33+, A2s+, KTs+, QTs+, JTs, T9s, A8o+, KJo+"
+            }
+        },
+        "vs LJ": {
+            "100bb": {
+                "3bet": "QQ+, AKs, AKo",
+                "call": "22-JJ, A6s-AQs, KTs+, QJs, T9s, 87s, AQo",
+                "3bet_light": "A3s-A5s, K9s, QTs, JTs, 98s, 76s, AJo, KQo"
+            },
+            "50bb": {
+                "3bet": "JJ+, AKs, AKo",
+                "call": "44-TT, A7s-AQs, KTs+, QTs+, T9s, AQo",
+                "3bet_light": "A4s-A6s, K9s, JTs, 98s, ATo-AJo, KQo"
+            },
+            "25bb": {
+                "raise_allin": "99-TT, KJs, AQo",
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "66-88, A9s-AJs, KQs, KTs, QTs+, JTs",
+                "3bet_light": "A8s, A5s, K9s, AJo, KQo"
+            },
+            "20bb": {
+                "raise_allin": "55-QQ, A9s-AQs, KTs+, QTs+, JTs, AJo+",
+                "3bet": "KK+, AKs",
+                "3bet_light": "A8s, K9s, KQo"
+            },
+            "17bb": {
+                "raise_allin": "44-KK, A8s+, KTs+, QTs+, JTs, AJo+, KQo",
+                "3bet": "AA+",
+                "3bet_light": "ATo"
+            },
+            "15bb": {
+                "raise_allin": "44-KK, A8s+, KTs+, QTs+, JTs, AJo+, KQo",
+                "3bet": "AA+",
+                "3bet_light": "ATo"
+            },
+            "12bb": {
+                "raise_allin": "44-KK, A8s+, KJs+, ATo+, KQo",
+                "call": "AA+, KTs, QTs+, JTs"
+            },
+            "10bb": {
+                "raise_allin": "55+, A8s+, KTs+, QJs, ATo+, KQo"
+            }
+        },
+        "vs SB": {
+            "100bb": {
+                "4bet": "KK+, AKs",
+                "call": "88-QQ, ATs-AQs, A4s-A5s, KTs+, QTs+, JTs, AQo+",
+                "3bet_light": "AJo"
+            },
+            "50bb": {
+                "raise_allin": "JJ-QQ, AKs, A4s-A5s, AKo",
+                "call": "KK+, 44-TT, A9s-AQs, K9s+, QTs+, JTs, T9s, AJo-AQo, KQo"
+            },
+            "25bb": {
+                "raise_allin": "77-QQ, AQs+, A4s-A5s, KQs, AJo+",
+                "call": "KK+, 55-66, A9s-AJs, KTs-KJs, QTs+, JTs, KQo"
+            },
+            "20bb": "55+, A8s+, KJs+, ATo+, KQo",
+            "17bb": {
+                "call": "44+, A8s+, KJs+, A9o+, KQo"
+            },
+            "15bb": {
+                "call": "44+, A8s+, KJs+, A9o+, KQo"
+            },
+            "12bb": {
+                "call": "33+, A7s+, KTs+, QTs+, JTs, A8o+, KQo"
+            },
+            "10bb": {
+                "call": "33+, A3s+, KTs+, QTs+, JTs, T9s, A8o+, KJo+"
+            }
+        }
+    },
+    "LJ": {
+        "open": {
+            "100bb": "44+, A3s+, K9s+, Q9s+, J9s+, T8s+, 98s, 87s, ATo+, KQo",
+            "50bb": "44+, A3s+, K8s+, Q8s+, J8s+, T8s+, 98s, ATo+, KJo+",
+            "25bb": "55+, A3s+, K7s+, Q9s+, J9s+, T8s+, 98s, ATo+, KJo+, QJo",
+            "20bb": "66+, A4s+, K8s+, Q9s+, J9s+, T8s+, 98s, ATo+, KJo+",
+            "17bb": {
+                "raise": "66+, A3s+, K7s+, Q8s+, J9s+, T9s, A9o+, KJo+, QJo"
+            },
+            "15bb": {
+                "raise_allin": "55-77, KTs, QTs+, JTs, ATo-AJo",
+                "raise": "88+, A3s+, KJs+, K9s, Q9s, J9s, T9s, AQo+, A9o, KJo+, QJo"
+            },
+            "12bb": {
+                "raise_allin": "33-99, A3s-AJs, K9s+, Q9s+, J9s+, T9s, A9o+, KJo+",
+                "raise": "TT+, AQs+, A2s, KTo, QJo"
+            },
+            "10bb": {
+                "raise_allin": "22-JJ, A2s+, K9s+, Q9s+, J9s+, T9s, 98s, A7o+, KJo+, QJo",
+                "raise": "QQ+, KTo"
+            }
+        },
+        "vs BB": {
+            "100bb": {
+                "4bet": "AA+",
+                "call": "88-KK, A9s+, A4s-A5s, KTs+, QTs+, JTs, T9s, AKo",
+                "3bet_light": "AQo"
+            },
+            "50bb": {
+                "raise_allin": "AKo",
+                "call": "88+, A9s+, KTs+, QTs+, JTs, AQo"
+            },
+            "25bb": {
+                "raise_allin": "88-QQ, AKs, A4s-A5s, KQs, AQo+",
+                "call": "KK+, 66-77, A8s-AQs, KTs-KJs, QTs+, JTs, AJo"
+            },
+            "20bb": "66+, ATs+, KQs, AJo+",
+            "17bb": {
+                "call": "55+, ATs+, KQs, ATo+"
+            },
+            "15bb": {
+                "call": "55+, ATs+, KQs, ATo+"
+            },
+            "12bb": {
+                "call": "55+, A9s+, KJs+, ATo+"
+            },
+            "10bb": {
+                "call": "44+, A7s+, KTs+, QTs+, JTs, ATo+, KQo"
+            }
+        },
+        "vs BTN": {
+            "100bb": {
+                "4bet": "QQ+, AKs, AKo",
+                "call": "55-JJ, ATs-AQs, KTs+, QJs, JTs, 65s, AQo",
+                "3bet_light": "A5s, K9s, AJo"
+            },
+            "50bb": {
+                "raise_allin": "TT-JJ, A4s-A5s, AKo",
+                "4bet": "QQ+, AKs",
+                "call": "55-99, A6s-AQs, A3s, K9s+, QTs+, JTs, T9s, 87s, 76s, 65s, AJo-AQo, KQo",
+                "3bet_light": "ATo"
+            },
+            "25bb": {
+                "raise_allin": "88-KK, AQs+, A4s-A5s, AQo+",
+                "call": "AA, 66-77, A7s-AJs, A3s, KTs+, QJs, AJo"
+            },
+            "20bb": "66+, ATs+, KQs, AJo+",
+            "17bb": {
+                "call": "55+, A9s+, KQs, ATo+"
+            },
+            "15bb": {
+                "call": "55+, A9s+, KQs, ATo+"
+            },
+            "12bb": {
+                "call": "44+, A8s+, KJs+, ATo+, KQo"
+            },
+            "10bb": {
+                "call": "44+, A5s+, KTs+, QTs+, JTs, A9o+, KQo"
+            }
+        },
+        "vs CO": {
+            "100bb": {
+                "4bet": "QQ+, AKs, AKo",
+                "call": "22-JJ, A9s-AQs, KTs+, QTs+, JTs, T9s",
+                "3bet_light": "A5s, AQo"
+            },
+            "50bb": {
+                "raise_allin": "TT-JJ, A4s-A5s, AKo",
+                "4bet": "QQ+, AKs",
+                "call": "44-99, A8s-AQs, K9s+, QTs+, JTs, T9s, 98s, 87s, 76s, 65s, AQo",
+                "3bet_light": "AJo"
+            },
+            "25bb": {
+                "raise_allin": "88-KK, AQs+, AQo+",
+                "call": "AA, 55-77, ATs-AJs, A5s, KTs+, QJs"
+            },
+            "20bb": "77+, AJs+, KQs, AQo+",
+            "17bb": {
+                "call": "66+, ATs+, KQs, AJo+"
+            },
+            "15bb": {
+                "call": "66+, ATs+, KQs, AJo+"
+            },
+            "12bb": {
+                "call": "55+, A8s+, KJs+, ATo+"
+            },
+            "10bb": {
+                "call": "44+, A8s+, KTs+, QTs+, JTs, ATo+, KQo"
+            }
+        },
+        "vs HJ": {
+            "100bb": {
+                "4bet": "KK+, AKs",
+                "call": "22-QQ, A9s-AQs, KTs+, QTs+, JTs, T9s, AKo",
+                "3bet_light": "A5s, AQo"
+            },
+            "50bb": {
+                "4bet": "JJ+, AKs, AKo",
+                "call": "44-TT, A8s-AQs, A4s-A5s, KTs+, QTs+, JTs, T9s, 87s, 76s, 65s, AQo",
+                "3bet_light": "AJo, KQo"
+            },
+            "25bb": {
+                "raise_allin": "99-KK, AKs, A5s, KJs+, AQo+",
+                "call": "AA, 55-88, A8s-AQs, A3s-A4s, KTs, QTs+, JTs, T9s, 98s, 87s, 76s, AJo, KQo"
+            },
+            "20bb": "77+, AJs+, KQs, AQo+",
+            "17bb": {
+                "call": "66+, ATs+, KQs, AJo+"
+            },
+            "15bb": {
+                "call": "66+, ATs+, KQs, AJo+"
+            },
+            "12bb": {
+                "call": "66+, ATs+, KQs, AJo+"
+            },
+            "10bb": {
+                "call": "55+, A8s+, KJs+, ATo+, KQo"
+            }
+        },
+        "vs SB": {
+            "100bb": {
+                "4bet": "AA+",
+                "call": "99-KK, ATs+, A5s, KTs+, QTs+, JTs, AKo",
+                "3bet_light": "AQo"
+            },
+            "50bb": {
+                "raise_allin": "JJ-QQ, AKs, A5s, AKo",
+                "call": "KK+, 55-TT, A9s-AQs, KTs+, QTs+, JTs, T9s, AQo"
+            },
+            "25bb": {
+                "raise_allin": "88-QQ, AKs, A5s, KQs, AQo+",
+                "call": "KK+, 77, A9s-AQs, KTs-KJs, QJs, AJo, KQo"
+            },
+            "20bb": "66+, ATs+, KQs, ATo+",
+            "17bb": {
+                "call": "55+, A9s+, KQs, ATo+"
+            },
+            "15bb": {
+                "call": "55+, A9s+, KQs, ATo+"
+            },
+            "12bb": {
+                "call": "44+, A8s+, KJs+, ATo+"
+            },
+            "10bb": {
+                "call": "44+, A7s+, A5s, KTs+, QTs+, JTs, T9s, A9o+, KQo"
+            }
+        }
     },
     "CO": {
         "open": {
-            "100bb": "22+, A2s+, K3s+, Q5s+, J7s+, T7s+, 96s+, 86s+, 76s+, 65s+, 54s+, A8o+, KTo+, QTo+, JTo+",
-            "50bb": "33+, A2s+, K3s+, Q5s+, J7s+, T7s+, 97s+, 86s+, 76s+, 65s+, A7o+, K9o+, QTo+, JTo+",
-            "25bb": "55+, A2s+, K4s+, Q6s+, J7s+, T7s+, 97s+, 87s+, A7o+, KTo+, QTo+, JTo+"
+            "100bb": "22+, A2s+, K3s+, Q5s+, J7s+, T7s+, 96s+, 86s+, 75s+, 65s, 54s, A7o+, K9o+, QTo+, JTo, T9o",
+            "50bb": "22+, A2s+, K3s+, Q5s+, J7s+, T7s+, 97s+, 86s+, 76s, 65s, A7o+, K9o+, QTo+, JTo",
+            "25bb": "44+, A2s+, K4s+, Q6s+, J7s+, T7s+, 97s+, 87s, A7o+, KTo+, QTo+, JTo",
+            "20bb": "55+, A2s+, K5s+, Q7s+, J8s+, T8s+, 98s, 87s, A8o+, KTo+, QTo+, JTo",
+            "17bb": {
+                "raise_allin": "22-55, A2s-A6s, KTs, QTs, JTs, A8o-A9o",
+                "raise": "66+, A7s+, KJs+, K6s-K9s, QJs, Q7s-Q9s, J8s-J9s, T8s+, 98s, ATo+, A5o-A7o, KTo+, QTo+, JTo"
+            },
+            "15bb": {
+                "raise_allin": "22-77, A2s-A7s, K9s-KTs, QTs+, J9s+, T9s, A7o-AJo, KQo",
+                "raise": "88+, A8s+, KJs+, K7s-K8s, Q8s-Q9s, J8s, T8s, 98s, AQo+, A5o-A6o, KTo-KJo, QTo+, JTo"
+            },
+            "12bb": {
+                "raise_allin": "22-TT, A2s-AJs, K9s+, Q9s+, J9s+, T8s+, 98s, A2o+, KTo+, QTo+, JTo",
+                "raise": "JJ+, AQs+, K7s-K8s, Q8s, J8s"
+            },
+            "10bb": {
+                "raise_allin": "22-KK, A2s+, K6s+, Q8s+, J8s+, T8s+, 97s+, A2o+, KTo+, QTo+, JTo",
+                "raise": "AA+, K5s"
+            }
+        },
+        "vs BB": {
+            "100bb": {
+                "4bet": "KK+",
+                "call": "77-QQ, A7s+, A4s-A5s, K9s+, QTs+, J9s+, T9s, AQo+, KQo",
+                "3bet_light": "AJo"
+            },
+            "50bb": {
+                "raise_allin": "TT-QQ, AKs, AKo",
+                "call": "KK+, 66-99, A8s-AQs, A4s-A5s, K9s+, Q9s+, J9s+, T9s, AJo-AQo, KQo"
+            },
+            "25bb": {
+                "raise_allin": "55-QQ, AQs+, KQs, AJo+",
+                "call": "KK+, A3s-AJs, K9s-KJs, Q9s+, JTs, ATo, KQo"
+            },
+            "20bb": "44+, A8s+, KJs+, ATo+",
+            "17bb": {
+                "call": "33+, A7s+, KTs+, QJs, A8o+"
+            },
+            "15bb": {
+                "call": "33+, A7s+, KTs+, QJs, A8o+"
+            },
+            "12bb": {
+                "call": "33+, A5s+, KTs+, QTs+, JTs, A8o+, KQo"
+            },
+            "10bb": {
+                "call": "33+, A2s+, K9s+, Q9s+, J9s+, T9s, A7o+, KJo+"
+            }
+        },
+        "vs BTN": {
+            "100bb": {
+                "4bet": "JJ+, AKs, AKo",
+                "call": "66-TT, A8s-AQs, A3s-A5s, KTs+, QTs+, JTs, T9s, AJo-AQo, KQo",
+                "3bet_light": "A6s-A7s, K8s-K9s, ATo"
+            },
+            "50bb": {
+                "raise_allin": "88-QQ, AQo+",
+                "4bet": "KK+, AQs+",
+                "call": "33-77, A2s-AJs, K9s+, Q9s+, J9s+, T9s, 98s, 87s, 76s, 65s, 54s, AJo, KQo",
+                "3bet_light": "ATo"
+            },
+            "25bb": {
+                "raise_allin": "33-KK, AQs+, KQs, AJo+",
+                "call": "AA+, A2s-AJs, KTs-KJs, QTs+, JTs, 76s, 65s, ATo, KQo"
+            },
+            "20bb": "44+, A8s+, KJs+, ATo+, KQo",
+            "17bb": {
+                "call": "33+, A5s+, KJs+, A8o+, KQo"
+            },
+            "15bb": {
+                "call": "33+, A5s+, KJs+, A8o+, KQo"
+            },
+            "12bb": {
+                "call": "33+, A3s+, KTs+, QJs, A8o+, KQo"
+            },
+            "10bb": {
+                "call": "33+, A2s+, K9s+, Q9s+, J9s+, T9s, A7o+, KJo+"
+            }
+        },
+        "vs HJ": {
+            "100bb": {
+                "3bet": "JJ+, AKs, AKo",
+                "call": "22-TT, A6s-AQs, A2s, K9s+, Q9s+, JTs, T9s, 87s, 65s, 54s, AQo, KQo",
+                "3bet_light": "A3s-A5s, K7s-K8s, Q8s, J9s, T8s, 98s, 76s, ATo-AJo"
+            },
+            "50bb": {
+                "3bet": "JJ+, AKs, AKo",
+                "call": "22-TT, A6s-AQs, A2s, KTs+, QTs+, JTs, T9s, 87s, 65s, AQo, KQo",
+                "3bet_light": "A3s-A5s, K8s-K9s, Q9s, J9s, T8s, 98s, 76s, ATo-AJo, KJo"
+            },
+            "25bb": {
+                "raise_allin": "88-TT, KTs-KJs, QJs, AQo",
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "55-77, A7s-AJs, A4s-A5s, KQs, K9s, QTs, JTs, T9s, AJo, KQo",
+                "3bet_light": "A6s, Q9s, ATo, KJo"
+            },
+            "20bb": {
+                "raise_allin": "33-QQ, A3s-AQs, KTs+, QTs+, JTs, ATo+, KQo",
+                "3bet": "KK+, AKs",
+                "3bet_light": "A2s, K9s, T9s, KJo"
+            },
+            "17bb": {
+                "raise_allin": "33-KK, A3s+, KTs+, QTs+, JTs, ATo+, KQo",
+                "call": "AA+, K9s, T9s, KJo"
+            },
+            "15bb": {
+                "raise_allin": "33-KK, A3s+, KTs+, QTs+, JTs, ATo+, KQo",
+                "call": "AA+, K9s, T9s, KJo"
+            },
+            "12bb": {
+                "raise_allin": "33+, A3s+, KTs+, QTs+, JTs, A9o+, KQo"
+            },
+            "10bb": {
+                "raise_allin": "33-KK, A3s+, KJs+, A9o+, KQo",
+                "call": "AA+, KTs, QTs+, JTs"
+            }
+        },
+        "vs LJ": {
+            "100bb": {
+                "3bet": "QQ+, AKs, AKo",
+                "call": "22-JJ, A6s-AQs, A2s, K9s+, QTs+, JTs, T9s, 98s, 87s, 65s, AQo, KQo",
+                "3bet_light": "A3s-A5s, K8s, Q9s, J9s, T8s, 76s, 54s, ATo-AJo"
+            },
+            "50bb": {
+                "3bet": "JJ+, AKs, AKo",
+                "call": "22-TT, A6s-AQs, KTs+, QTs+, J9s+, T9s, 98s, 87s, AQo, KQo",
+                "3bet_light": "A3s-A5s, K9s, Q9s, 76s, ATo-AJo, KJo"
+            },
+            "25bb": {
+                "raise_allin": "99-TT, KJs, AQo",
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "44-88, A7s-AJs, A2s-A5s, KQs, KTs, QTs+, JTs, T9s, AJo, KQo",
+                "3bet_light": "A6s, K9s, ATo, KJo"
+            },
+            "20bb": {
+                "raise_allin": "33-QQ, A7s-AQs, A4s-A5s, KTs+, QTs+, JTs, AJo+, KQo",
+                "3bet": "KK+, AKs",
+                "3bet_light": "A3s, K9s, ATo"
+            },
+            "17bb": {
+                "raise_allin": "33-KK, A3s+, KTs+, QTs+, JTs, ATo+, KQo",
+                "call": "AA+, K9s, T9s, KJo"
+            },
+            "15bb": {
+                "raise_allin": "33-KK, A3s+, KTs+, QTs+, JTs, ATo+, KQo",
+                "call": "AA+, K9s, T9s, KJo"
+            },
+            "12bb": {
+                "raise_allin": "44+, A4s+, KTs+, QTs+, JTs, ATo+, KQo"
+            },
+            "10bb": {
+                "raise_allin": "44-KK, A5s+, KQs, A9o+, KQo",
+                "call": "AA+, KTs-KJs, QJs"
+            }
+        },
+        "vs SB": {
+            "100bb": {
+                "4bet": "KK+, AKs",
+                "call": "66-QQ, A7s-AQs, A4s-A5s, K9s+, Q9s+, J9s+, T9s, 98s, 87s, AQo+, KQo",
+                "3bet_light": "AJo"
+            },
+            "50bb": {
+                "raise_allin": "88-QQ, AKs, A4s-A5s, AKo",
+                "call": "KK+, 44-77, A8s-AQs, K9s+, Q9s+, J9s+, T9s, AJo-AQo, KQo"
+            },
+            "25bb": {
+                "raise_allin": "55-QQ, AQs+, A4s-A5s, AJo+",
+                "call": "KK+, A6s-AJs, A2s-A3s, K9s+, QTs+, JTs, ATo, KQo"
+            },
+            "20bb": "44+, A7s+, KJs+, A9o+, KQo",
+            "17bb": {
+                "call": "33+, A5s+, KTs+, QJs, A8o+, KQo"
+            },
+            "15bb": {
+                "call": "33+, A5s+, KTs+, QJs, A8o+, KQo"
+            },
+            "12bb": {
+                "call": "22+, A3s+, KTs+, QTs+, JTs, A7o+, KQo"
+            },
+            "10bb": {
+                "call": "22+, A2s+, K9s+, Q9s+, J9s+, T9s, A5o+, KJo+"
+            }
         }
     },
     "BTN": {
         "open": {
-            "100bb": "22+, A2s+, K2s+, Q2s+, J3s+, T4s+, 95s+, 85s+, 74s+, 64s+, 53s+, A2o+, K8o+, Q8o+, J8o+, T8o+, 98o",
-            "50bb": "22+, A2s+, K2s+, Q2s+, J3s+, T5s+, 95s+, 85s+, 75s+, 64s+, 54s+, A2o+, K8o+, Q8o+, J8o+, T8o+, 98o",
-            "25bb": "33+, A2s+, K2s+, Q4s+, J5s+, T6s+, 96s+, 86s+, 75s+, 65s+, 54s+, A4o+, K8o+, Q8o+, J9o+, T9o+"
+            "100bb": "22+, A2s+, K2s+, Q2s+, J3s+, T4s+, 95s+, 85s+, 74s+, 64s+, 53s+, 43s, A2o+, K7o+, Q8o+, J8o+, T8o+, 98o",
+            "50bb": "22+, A2s+, K2s+, Q2s+, J3s+, T5s+, 95s+, 85s+, 75s+, 64s+, 54s, A3o+, K7o+, Q8o+, J8o+, T8o+, 98o",
+            "25bb": "33+, A2s+, K2s+, Q4s+, J5s+, T6s+, 96s+, 86s+, 75s+, 65s, A3o+, K8o+, Q8o+, J9o+, T9o",
+            "20bb": {
+                "raise_allin": "22-55, A2s-A5s",
+                "raise": "66+, A6s+, K4s+, Q6s+, J7s+, T7s+, 97s+, 87s, A4o+, K9o+, Q9o+, J9o+, T9o"
+            },
+            "17bb": {
+                "raise_allin": "22-JJ, A2s+, K2s+, Q6s+, J7s+, T7s+, 97s+, 87s, 76s, A2o+, K9o+, Q9o+, J9o+, T9o",
+                "raise": "QQ+, Q5s, K8o"
+            },
+            "15bb": {
+                "raise_allin": "22-66, A2s-A9s, K9s, Q9s-QTs, J9s+, T8s+, 98s, A2o-AJo, KTo+, QTo+, JTo",
+                "raise": "77+, ATs+, KTs+, K4s-K8s, QJs, Q5s-Q8s, J7s-J8s, T7s, 87s, AQo+, K9o, Q9o, J9o"
+            },
+            "12bb": {
+                "raise_allin": "22-99, A2s-AJs, K4s+, Q8s+, J8s+, T8s+, 97s+, 87s, A2o+, K9o+, QTo+, JTo",
+                "raise": "TT+, AQs+, K3s, Q7s, J7s"
+            },
+            "10bb": {
+                "raise_allin": "22-JJ, A2s+, K2s+, Q6s+, J7s+, T7s+, 97s+, 87s, 76s, A2o+, K9o+, Q9o+, J9o+, T9o",
+                "raise": "QQ+, Q5s, K8o"
+            }
         },
         "vs BB": {
+            "100bb": {
+                "4bet": "KK+, AKs, AKo",
+                "call": "55-QQ, A2s-AQs, K6s+, Q8s+, J8s+, T8s+, 97s+, 87s, 76s, 65s, 54s, ATo-AQo, KQo",
+                "3bet_light": "K5s, A9o"
+            },
             "50bb": {
-                "4bet": "TT+, AKs, AKo",
-                "call": "22-99, A2s-A3s, A6s-AJs, K8s-KQs, Q9s-QJs, J9s-JTs, T9s, 97s+, 87s, 76s, 65s, ATo-AQo, KJo-KQo, QJo"
+                "raise_allin": "TT-QQ, 33-44, AKs, AQo+",
+                "call": "KK+, 55-99, A2s-AQs, K6s+, Q8s+, J8s+, T8s+, 98s, 87s, ATo-AJo, KJo+, QJo"
+            },
+            "25bb": {
+                "raise_allin": "22+, A8s+, KQs, ATo+, KQo",
+                "call": "A2s-A7s, K9s-KJs, Q9s+, J9s+, T9s"
+            },
+            "20bb": "33+, A6s+, KTs+, QTs+, A8o+, KQo",
+            "17bb": {
+                "call": "33+, A3s+, KTs+, QTs+, JTs, A7o+, KQo"
+            },
+            "15bb": {
+                "call": "33+, A3s+, KTs+, QTs+, JTs, A7o+, KQo"
+            },
+            "12bb": {
+                "call": "33+, A2s+, KTs+, QTs+, JTs, A6o+, KJo+"
+            },
+            "10bb": {
+                "call": "33+, A2s+, K7s+, Q9s+, J9s+, T8s+, 98s, A2o+, KTo+, QTo+, JTo"
             }
         },
         "vs CO": {
+            "100bb": {
+                "3bet": "TT+, AQs+, AKo",
+                "call": "22-99, A4s-AJs, K7s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 75s, 64s, ATo-AQo, KJo+, QJo, JTo",
+                "3bet_light": "A2s-A3s, K5s-K6s, Q7s, J7s, T7s, 76s, 65s, 54s, A8o-A9o, KTo, QTo"
+            },
             "50bb": {
                 "3bet": "TT+, AQs+, AKo",
-                "3bet_l": "A8o-A9o, KTo, QTo, JTo, T8s, J8s, Q8s, K6s-K7s, A4s-A5s, 54s",
-                "call": "22-99, A2s-A3s, A6s-AJs, K8s-KQs, Q9s-QJs, J9s-JTs, T9s+, 97s+, 87s, 65s, ATo-AQo, KJo-KQo, QJo"
+                "call": "22-99, A6s-AJs, A2s-A3s, K8s+, Q9s+, J9s+, T9s, 97s+, 87s, 76s, 65s, ATo-AQo, KJo+, QJo",
+                "3bet_light": "A4s-A5s, K6s-K7s, Q8s, J8s, T8s, 54s, A8o-A9o, KTo, QTo, JTo"
+            },
+            "25bb": {
+                "raise_allin": "33-99, A2s-A5s, KTs, QTs+, JTs, AJo+, KQo",
+                "3bet": "TT+, AQs+",
+                "call": "A7s-AJs, KJs+, K8s-K9s, Q9s, J9s, T9s, 98s, ATo, KJo, QJo",
+                "3bet_light": "A6s, K7s, Q8s, A9o, KTo"
+            },
+            "20bb": {
+                "raise_allin": "22-QQ, A2s+, K9s+, QTs+, JTs, A9o+, KQo",
+                "call": "KK+, Q9s, J9s, T9s, KJo"
+            },
+            "17bb": {
+                "raise_allin": "55+, A2s+, KTs+, QJs, A7o+, KJo+"
+            },
+            "15bb": {
+                "raise_allin": "22-KK, A2s+, K9s+, QTs+, JTs, T9s, A9o+, KJo+",
+                "call": "AA+, Q9s, J9s"
+            },
+            "12bb": {
+                "raise_allin": "22+, A2s+, KTs+, QTs+, JTs, A8o+, KJo+"
+            },
+            "10bb": {
+                "raise_allin": "55+, A2s+, KTs+, QJs, A7o+, KJo+"
+            }
+        },
+        "vs HJ": {
+            "100bb": {
+                "3bet": "TT+, AQs+, AKo",
+                "call": "22-99, A6s-AJs, A2s-A3s, K8s+, Q9s+, J9s+, T9s, 97s+, 86s+, 75s, 65s, AJo-AQo, KQo",
+                "3bet_light": "A4s-A5s, K6s-K7s, Q7s-Q8s, J8s, T8s, 76s, 54s, ATo, KJo, QJo"
+            },
+            "50bb": {
+                "3bet": "TT+, AQs+, AKo",
+                "call": "22-99, A6s-AJs, A2s-A3s, K9s+, QTs+, J9s+, T9s, 98s, 87s, AJo-AQo, KQo",
+                "3bet_light": "A4s-A5s, K7s-K8s, Q9s, T8s, 76s, ATo, KTo-KJo, QJo"
+            },
+            "25bb": {
+                "raise_allin": "88-TT, 33-44, KTs, QTs+, JTs, AQo",
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "55-77, A3s-AJs, KJs+, K8s-K9s, J9s, T8s+, 98s, ATo-AJo, KJo+, QJo",
+                "3bet_light": "A2s, Q9s, A9o, KTo"
+            },
+            "20bb": {
+                "raise_allin": "33-QQ, A2s+, KTs+, QTs+, JTs, ATo+, KQo",
+                "call": "KK+, K9s, Q9s, J9s, T9s, KJo"
+            },
+            "17bb": {
+                "raise_allin": "33-KK, A3s+, KJs+, A8o+, KJo+",
+                "call": "AA+, KTs, QTs+, JTs"
+            },
+            "15bb": {
+                "raise_allin": "33+, A3s+, KTs+, QTs+, JTs, ATo+, KQo"
+            },
+            "12bb": {
+                "raise_allin": "22+, A3s+, KTs+, QTs+, JTs, A9o+, KJo+"
+            },
+            "10bb": {
+                "raise_allin": "33-KK, A3s+, KJs+, A8o+, KJo+",
+                "call": "AA+, KTs, QTs+, JTs"
+            }
+        },
+        "vs LJ": {
+            "100bb": {
+                "3bet": "JJ+, AKs, AKo",
+                "call": "22-TT, A6s-AQs, A2s-A3s, K8s+, Q9s+, J9s+, T9s, 97s+, 86s+, 75s, 65s, AJo-AQo, KQo",
+                "3bet_light": "A4s-A5s, K6s-K7s, Q8s, J8s, T8s, 76s, 54s, ATo, KJo"
+            },
+            "50bb": {
+                "3bet": "JJ+, AKs, AKo",
+                "call": "22-TT, A6s-AQs, A2s-A3s, K9s+, QTs+, JTs, T9s, 97s+, 87s, 65s, AJo-AQo, KQo",
+                "3bet_light": "A4s-A5s, K7s-K8s, Q9s, J9s, T8s, 76s, 54s, ATo, KJo"
+            },
+            "25bb": {
+                "raise_allin": "88-TT, A2s-A5s, AQo",
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "22-77, A6s-AJs, K8s+, Q9s+, J9s+, T9s, 98s, 87s, ATo-AJo, KJo+",
+                "3bet_light": "A9o, KTo, QJo"
+            },
+            "20bb": {
+                "raise_allin": "33-QQ, AQs+, A4s-A5s, KTs+, QTs+, JTs, AJo+, KQo",
+                "call": "KK+, A6s-AJs, A2s-A3s, K9s, Q9s, J9s, T9s, ATo, KJo"
+            },
+            "17bb": {
+                "raise_allin": "44-KK, A3s+, KJs+, A9o+, KQo",
+                "call": "AA+, KTs, QTs+, JTs"
+            },
+            "15bb": {
+                "raise_allin": "33-KK, A2s+, KTs+, QTs+, JTs, ATo+, KQo",
+                "call": "AA+, K9s, T9s"
+            },
+            "12bb": {
+                "raise_allin": "44-KK, A2s+, KTs+, QTs+, JTs, A9o+, KQo",
+                "call": "AA+, K9s, T9s"
+            },
+            "10bb": {
+                "raise_allin": "44-KK, A3s+, KJs+, A9o+, KQo",
+                "call": "AA+, KTs, QTs+, JTs"
+            }
+        },
+        "vs SB": {
+            "100bb": {
+                "4bet": "QQ+, AKs, AKo",
+                "call": "33-JJ, A2s-AQs, K8s+, Q8s+, J8s+, T8s+, 97s+, 87s, 76s, 65s, 54s, ATo-AQo, KJo+",
+                "3bet_light": "A9o, KTo"
+            },
+            "50bb": {
+                "raise_allin": "99-QQ, 22-33, AKs, AQo+",
+                "call": "KK+, 44-88, A2s-AQs, K8s+, Q9s+, J9s+, T8s+, 98s, 87s, 76s, ATo-AJo, KJo+"
+            },
+            "25bb": {
+                "raise_allin": "44-QQ, AJs+, A2s-A5s, KTs+, A8o+, KQo",
+                "call": "KK+, A6s-ATs, K8s-K9s, Q9s+, JTs, T9s, 98s, KJo"
+            },
+            "20bb": "33+, A4s+, KTs+, QJs, A7o+, KQo",
+            "17bb": {
+                "call": "33+, A2s+, KTs+, QTs+, A6o+, KJo+"
+            },
+            "15bb": {
+                "call": "33+, A2s+, KTs+, QTs+, A6o+, KJo+"
+            },
+            "12bb": {
+                "call": "33+, A2s+, K9s+, QTs+, JTs, A3o+, KTo+, QJo"
+            },
+            "10bb": {
+                "call": "33+, A2s+, K8s+, Q9s+, J9s+, T9s, A2o+, KTo+, QTo+"
             }
         }
     },
     "SB": {
-        "open_limp": {
+        "open": {
+            "100bb": {
+                "raise": "99-QQ, A8s+, K9s+, QTs+, JTs, T9s, 74s-75s, 63s-64s, 52s-53s, ATo-AQo, KJo+, T9o, 98o, 87o",
+                "call": "KK+, 22-88, A2s-A7s, K2s-K8s, Q2s-Q9s, J2s-J9s, T2s-T8s, 92s+, 82s+, 76s, 72s-73s, 65s, 62s, 54s, 42s+, 32s, AKo, A2o-A9o, K2o-KTo, Q2o+, J4o+, T6o-T8o, 96o-97o, 85o-86o, 75o+, 65o, 54o"
+            },
             "50bb": {
-                "open": "88+, A4s+, K7s+, Q9s+, J9s+, T8s+, 98s+, A9o+, KTo+, QJo+, 65s, 54s, J2s, J3s, T2s, T3s, K6o, 6o, K5o, Q5o",
-                "limp": "A2s-A3s, 77-22, K6s-K2s, Q8s-Q2s, J8s-J4s, T7s-T4s, 97s-92s, 87s-82s, 76s-73s, 64s-63s, 53s-52s, 43s-42s, 32s, A8o-A2o, K9o-K7o, K4o-K2o, QTo-Q7o, Q4o-Q3o, JTo-J5o, T9o-T6o, 98o-96o, 87o-86o, 76o, 65o, 54o"
+                "raise": "KK+, 88-TT, A4s+, K7s+, Q9s+, J9s+, J2s-J3s, T8s+, T2s-T3s, 98s, 65s, 54s, A9o-AJo, KTo+, K5o-K6o, QJo, Q5o-Q6o",
+                "call": "JJ-QQ, 22-77, A2s-A3s, K2s-K6s, Q2s-Q8s, J4s-J8s, T4s-T7s, 92s-97s, 82s+, 73s+, 63s-64s, 52s-53s, 42s+, 32s, AQo+, A2o-A8o, K7o-K9o, K2o-K4o, Q7o-QTo, Q3o-Q4o, J5o+, T6o+, 96o+, 86o+, 76o, 65o, 54o"
+            },
+            "25bb": {
+                "raise": "88+, A9s+, KJs+, J2s-J5s, T2s-T5s, 92s-95s, 87s, 54s, A5o-A7o, K8o-K9o, Q8o-Q9o, J8o, T8o",
+                "call": "22-77, A2s-A8s, K2s-KTs, Q2s+, J6s+, T6s+, 96s+, 82s-86s, 73s+, 63s+, 52s-53s, 43s, A8o+, A2o-A4o, KTo+, K2o-K7o, QTo+, Q4o-Q7o, J9o+, J7o, T9o, T7o, 97o+, 86o+, 76o"
+            },
+            "20bb": {
+                "raise_allin": "22-55, A2o-A9o",
+                "raise": "88+, ATs+, KJs+, J2s-J4s, T2s-T4s, 92s-94s, KJo+, K7o-K8o, Q7o-Q8o, J8o, T8o",
+                "call": "66-77, A2s-A9s, K2s-KTs, Q2s+, J5s+, T5s+, 95s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, ATo+, K9o-KTo, K2o-K6o, Q9o+, Q4o-Q6o, J9o+, J6o-J7o, T9o, T7o, 97o+, 87o, 76o"
+            },
+            "17bb": {
+                "raise_allin": "22-99, A2s-AJs, K2s+, Q2s+, J3s+, T4s+, 94s+, 84s+, 74s+, 64s+, 54s, A2o+, K2o+, Q5o+, J7o+, T7o+, 97o+, 87o",
+                "call": "TT+, AQs+, J2s, T2s-T3s, 93s, 53s, 43s, Q3o-Q4o"
+            },
+            "15bb": {
+                "raise_allin": "22-66, A2s-A3s, K4s-K6s, Q4s-Q6s, J4s-J6s, T6s-T7s, 96s+, 86s+, 76s, 65s, A2o-AQo, K5o-KTo, Q6o",
+                "raise": "77+, AJs+, KQs, T2s, 92s, K2o, Q3o, J6o",
+                "call": "A4s-ATs, K7s-KJs, K2s-K3s, Q7s+, Q2s-Q3s, J7s+, J2s-J3s, T8s+, T3s-T5s, 93s-95s, 84s-85s, 73s-75s, 63s-64s, 52s+, 43s, AKo, KJo+, K3o-K4o, Q7o+, Q4o-Q5o, J7o+, T7o+, 97o+, 87o"
+            },
+            "12bb": {
+                "raise_allin": "22-77, A2s-A8s, K2s-K8s, Q4s-Q8s, J4s-J8s, T5s-T8s, 95s+, 85s+, 75s+, 65s, A2o+, K4o+, Q6o+, J8o+, T8o+, 98o",
+                "call": "88+, A9s+, K9s+, Q9s+, Q2s-Q3s, J9s+, J2s-J3s, T9s, T2s-T4s, 93s-94s, 84s, 74s, 63s-64s, 53s+, 43s, K2o-K3o, Q3o-Q5o, J7o, T7o, 97o, 87o"
+            },
+            "10bb": {
+                "raise_allin": "22-99, A2s-AJs, K2s+, Q2s+, J3s+, T4s+, 94s+, 84s+, 74s+, 64s+, 54s, A2o+, K2o+, Q5o+, J7o+, T7o+, 97o+, 87o",
+                "call": "TT+, AQs+, J2s, T2s-T3s, 93s, 53s, 43s, Q3o-Q4o"
+            }
+        },
+        "vs BB": {
+            "100bb": {
+                "raise": "KK+, AKo, A2o, K7o",
+                "call": "22-88, A2s-A7s, K2s-K8s, Q2s-Q9s, J2s-J9s, T4s-T8s, 95s+, 85s+, 76s, 65s, 54s, 43s, A3o-ATo, K8o-KJo, Q9o+, J9o+"
+            },
+            "50bb": {
+                "raise": "JJ-QQ, AQo+, A2o, K7o",
+                "call": "22-77, A2s-A3s, K2s-K6s, Q2s-Q8s, J4s-J8s, T5s-T7s, 95s-97s, 85s+, 75s+, 64s, 53s, A3o-A8o, K8o-K9o, Q8o-QTo, J8o+, T8o+"
+            },
+            "25bb": {
+                "raise_allin": "22-77, ATo+, A2o-A4o",
+                "call": "A2s-A8s, K2s-KTs, Q2s+, J6s+, T6s+, 96s+, 84s-86s, 74s+, 64s+, 53s, 43s, A8o-A9o, KTo+, K5o-K7o, QTo+, J9o+, T9o, 98o"
+            },
+            "20bb": {
+                "raise_allin": "66-77, A9s, A2s-A3s, K2s-K3s, ATo+, K2o-K6o",
+                "call": "A4s-A8s, K4s-KTs, Q2s+, J5s+, T5s+, 95s+, 84s+, 74s+, 63s+, 53s+, 43s, 32s, K9o-KTo, Q9o+, J9o+, T9o, 98o"
+            },
+            "17bb": {
+                "raise_allin": "66-77, A2s-A9s, K2s-K5s, Q2s-Q5s, ATo+, K2o-K6o",
+                "call": "K6s-KTs, Q6s+, J5s+, T5s+, 95s+, 85s+, 74s+, 64s+, 53s+, 43s, K9o-KTo, Q9o+, J9o+, T9o, 98o"
+            },
+            "15bb": {
+                "raise_allin": "66-77, A2s-ATs, KJs, K2s-K5s, Q2s-Q4s, AQo+, KJo+, K5o",
+                "call": "88-99, K6s-KTs, Q7s+, J3s+, T3s+, 95s-96s, 85s, 75s, 64s+, 53s+, 43s, K9o-KTo, Q9o+, J9o+, T9o, 98o"
+            },
+            "12bb": {
+                "raise_allin": "88-TT, A9s+, K9s+, Q9s+, Q2s-Q3s, J9s+, J2s-J3s, T9s, K2o-K3o, Q5o",
+                "call": "JJ+, T2s-T4s, 64s, 53s+, 43s"
+            },
+            "10bb": {
+                "call": "33+, A2s+, K7s+, Q9s+, J9s+, T8s+, 98s, A2o+, KTo+, QTo+, JTo"
+            }
+        },
+        "vs BTN": {
+            "100bb": {
+                "3bet": "TT+, A9s+, KTs+, QTs+, JTs, AKo, ATo-AJo, KJo+",
+                "call": "22-99, A6s-A8s, A2s-A3s, K3s-K9s, Q6s-Q9s, J7s-J9s, T7s-T8s, 97s+, 86s, 65s, AQo, A9o, KTo, QTo+, JTo",
+                "3bet_light": "A4s-A5s, T9s, 87s, 76s, 54s"
+            },
+            "50bb": {
+                "3bet": "TT+, AJs+, KQs, AQo+",
+                "call": "22-99, A4s-ATs, A2s, K6s-KJs, Q7s+, J8s+, T8s+, 98s, ATo-AJo, KJo+, QJo",
+                "3bet_light": "A3s, K4s-K5s, Q6s, J7s, T7s, 97s, 87s, 76s, A8o-A9o, KTo, QTo, JTo"
+            },
+            "25bb": {
+                "raise_allin": "22-TT, A9s-AJs, A2s-A7s, KQs, K9s-KTs, Q9s-QTs, J9s+, T9s, A7o-AQo, KJo+, QJo, JTo",
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "A8s, KJs, K8s, QJs, Q8s, J8s, T8s, 98s",
+                "3bet_light": "A5o, KTo, QTo"
+            },
+            "20bb": "22+, A2s+, K9s+, Q9s+, J9s+, T8s+, 98s, A2o+, KTo+, QTo+, JTo",
+            "17bb": {
+                "raise_allin": "22+, A2s+, K8s+, QTs+, JTs, A2o+, KTo+, QTo+",
+                "call": "K5s-K7s, Q8s-Q9s, J9s, T9s, JTo"
+            },
+            "15bb": {
+                "raise_allin": "22+, A2s+, K7s+, Q9s+, J9s+, T8s+, 98s, A2o+, KTo+, QTo+, JTo"
+            },
+            "12bb": {
+                "raise_allin": "22+, A2s+, K6s+, Q9s+, J9s+, T8s+, 98s, A2o+, KTo+, QTo+, JTo"
+            },
+            "10bb": {
+                "raise_allin": "22+, A2s+, K8s+, QTs+, JTs, A2o+, KTo+, QTo+",
+                "call": "K5s-K7s, Q8s-Q9s, J9s, T9s, JTo"
+            }
+        },
+        "vs CO": {
+            "100bb": {
+                "3bet": "TT+, A9s+, KTs+, QTs+, JTs, AKo, AJo, KQo",
+                "call": "22-99, A6s-A8s, A2s-A3s, K5s-K9s, Q8s-Q9s, J8s-J9s, T8s+, 97s, 86s, 65s, 54s, AQo, ATo, KJo, QJo",
+                "3bet_light": "A4s-A5s, 98s, 87s, 76s"
+            },
+            "50bb": {
+                "3bet": "99+, AQs+, AQo+",
+                "call": "22-88, A6s-AJs, A2s-A3s, K8s+, Q9s+, J9s+, T9s, 98s, 87s, AJo, KJo+",
+                "3bet_light": "A4s-A5s, K6s-K7s, Q8s, J8s, T8s, 97s, 76s, A9o-ATo, KTo, QJo"
+            },
+            "25bb": {
+                "raise_allin": "22-TT, ATs-AJs, A2s-A8s, KQs, KTs, QTs+, JTs, ATo-AQo, KQo",
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "A9s, KJs, K8s-K9s, Q8s-Q9s, J8s-J9s, T8s+, 98s, 87s, A9o, KJo, QJo",
+                "3bet_light": "K7s, A8o, KTo, QTo"
+            },
+            "20bb": {
+                "raise_allin": "22-KK, A2s+, K9s+, Q9s+, J9s+, T9s, A8o+, KTo+, QJo, JTo",
+                "call": "AA+, K8s, Q8s, J8s, T8s, 98s"
+            },
+            "17bb": {
+                "raise_allin": "22+, A2s+, KTs+, QJs, A3o+, KTo+, QJo",
+                "call": "K5s-K9s, Q7s-QTs, J8s+, T8s+, 97s+, 87s, QTo, JTo"
+            },
+            "15bb": {
+                "raise_allin": "22-KK, A2s+, K9s+, Q9s+, J9s+, T9s, A4o+, KTo+, QTo+, JTo",
+                "call": "AA+, K8s, Q8s, J8s, T8s, 98s"
+            },
+            "12bb": {
+                "raise_allin": "22-KK, A2s+, KTs+, QTs+, J9s+, T9s, A3o+, KJo+, QTo+",
+                "call": "AA+, K7s-K9s, Q8s-Q9s, J8s, T8s, 98s, KTo"
+            },
+            "10bb": {
+                "raise_allin": "22+, A2s+, KTs+, QJs, A3o+, KTo+, QJo",
+                "call": "K5s-K9s, Q7s-QTs, J8s+, T8s+, 97s+, 87s, QTo, JTo"
+            }
+        },
+        "vs HJ": {
+            "100bb": {
+                "3bet": "TT+, ATs+, KTs+, QTs+, JTs, AQo+",
+                "call": "22-99, A6s-A9s, A2s-A3s, K6s-K9s, Q8s-Q9s, J8s-J9s, T8s, 97s, 65s, 54s, ATo-AJo, KJo+",
+                "3bet_light": "A4s-A5s, T9s, 98s, 87s, 76s"
+            },
+            "50bb": {
+                "3bet": "TT+, AQs+, AKo",
+                "call": "22-99, A7s-AJs, A2s-A4s, K9s+, QTs+, J9s+, T9s, 87s, 76s, AJo-AQo, KQo",
+                "3bet_light": "A5s-A6s, K7s-K8s, Q9s, J8s, T8s, 98s, ATo, KJo"
+            },
+            "25bb": {
+                "raise_allin": "22-TT, A2s-AJs, KTs, QTs+, JTs, AJo-AQo",
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "KJs+, K8s-K9s, Q8s-Q9s, J8s-J9s, T8s+, 98s, 87s, 76s, ATo, KJo+",
+                "3bet_light": "K7s, A9o, KTo, QJo"
+            },
+            "20bb": {
+                "raise_allin": "22-KK, A2s+, K9s+, Q9s+, J9s+, T9s, A8o+, KQo",
+                "call": "AA+, K7s-K8s, Q8s, J8s, T8s, 98s, KJo, QJo"
+            },
+            "17bb": {
+                "raise_allin": "22-KK, A2s+, KTs+, QJs, A5o+, KJo+",
+                "call": "AA+, K5s-K9s, Q8s-QTs, J8s+, T8s+, 97s+, 87s, KTo, QTo+, JTo"
+            },
+            "15bb": {
+                "raise_allin": "22-KK, A2s+, K9s+, Q9s+, J9s+, T9s, A8o+, KJo+, QJo",
+                "call": "AA+, K8s, 98s, KTo"
+            },
+            "12bb": {
+                "raise_allin": "22-KK, A2s+, KTs+, QTs+, JTs, A7o+, KTo+, QJo",
+                "call": "AA+, K7s-K9s, Q8s-Q9s, J9s, T9s, 98s"
+            },
+            "10bb": {
+                "raise_allin": "22-KK, A2s+, KTs+, QJs, A5o+, KJo+",
+                "call": "AA+, K5s-K9s, Q8s-QTs, J8s+, T8s+, 97s+, 87s, KTo, QTo+, JTo"
+            }
+        },
+        "vs LJ": {
+            "100bb": {
+                "3bet": "QQ+, ATs+, KJs+, AQo+",
+                "call": "22-JJ, A5s-A9s, A2s-A3s, K8s-KTs, Q9s+, J9s+, T8s+, 98s, 76s, ATo-AJo, KJo+",
+                "3bet_light": "A4s, 87s, 65s"
+            },
+            "50bb": {
+                "3bet": "JJ+, AKs, AKo",
+                "call": "22-TT, A7s-AQs, A2s-A4s, KTs+, QTs+, Q8s, JTs, J8s, T9s, 97s+, AJo-AQo, KQo",
+                "3bet_light": "A5s-A6s, K8s-K9s, Q9s, J9s, T8s, 87s, ATo, KJo"
+            },
+            "25bb": {
+                "raise_allin": "55-TT, AJs-AQs, KTs, QTs+, JTs, AJo-AQo",
+                "3bet": "JJ+, AKs, AKo",
+                "call": "22-44, A3s-ATs, KJs+, K7s-K9s, Q8s-Q9s, J8s-J9s, T8s+, 97s+, 87s, 76s, 65s, ATo, KJo+",
+                "3bet_light": "A2s, A9o, KTo, QJo"
+            },
+            "20bb": {
+                "raise_allin": "22-KK, A2s+, K9s+, Q9s+, J9s+, T9s, ATo+, KQo",
+                "call": "AA+, K8s, T8s, 98s, A9o, KJo"
+            },
+            "17bb": {
+                "raise_allin": "22+, A2s+, KTs+, QJs, A9o+, KQo",
+                "call": "K6s-K9s, Q8s-QTs, J8s+, T8s+, 97s+, 87s, 76s, 65s, A8o, KTo-KJo, QTo+"
+            },
+            "15bb": {
+                "raise_allin": "22-KK, A2s+, KTs+, Q9s+, J9s+, T9s, A9o+, KQo",
+                "call": "AA+, K7s-K9s, Q8s, J8s, T8s, 98s, 87s, 76s, A8o, KTo-KJo, QJo"
+            },
+            "12bb": {
+                "raise_allin": "22+, A2s+, KTs+, QTs+, JTs, A9o+, KQo",
+                "call": "K7s-K9s, Q8s-Q9s, J8s-J9s, T8s+, 98s, 87s, 76s, A8o, KTo-KJo, QJo"
+            },
+            "10bb": {
+                "raise_allin": "22+, A2s+, KTs+, QJs, A9o+, KQo",
+                "call": "K6s-K9s, Q8s-QTs, J8s+, T8s+, 97s+, 87s, 76s, 65s, A8o, KTo-KJo, QTo+"
             }
         }
     },
     "BB": {
         "vs BTN": {
+            "100bb": {
+                "3bet": "TT+, ATs+, KJs+, AJo+, KQo",
+                "call": "22-99, A6s-A9s, A2s-A3s, K7s-KTs, K2s-K5s, Q2s+, J2s+, T2s-T5s, 92s-95s, 82s-85s, 72s-75s, 62s-64s, 52s-53s, 42s+, 32s, A2o-ATo, K2o-KJo, Q5o+, J7o+, T7o+, 97o+, 86o+, 76o, 65o, 54o",
+                "3bet_light": "A4s-A5s, K6s, T6s+, 96s+, 86s+, 76s, 65s, 54s"
+            },
             "50bb": {
-                "3bet": "TT+, AJs+, KQs+, AQo+",
-                "3bet_l": "87s, 98s, A2o-A3o, K4o, Q5o, A6o",
-                "call": "22-99, A2s-ATs, K2s-KJs, Q2s-QJs, J2s-JTs, T2s-T9s, 92s-97s, 82s-86s, 72s-76s, 62s-65s, 52s-54s, 42s-43s, 32s, AJo-A7o, A5o-A4o, KQo-K5o, K3o-K2o, QJo-Q6o, JTo-J7o, T9o-T7o, 98o-97o, 87o, 76o, 65o, 54o"
+                "3bet": "TT+, AJs+, KQs, AQo+",
+                "call": "22-99, A2s-ATs, K2s-KJs, Q2s+, J2s+, T2s+, 92s-97s, 82s-86s, 72s+, 62s+, 52s+, 42s+, 32s, A7o-AJo, A4o-A5o, K5o+, K2o-K3o, Q6o+, J7o+, T7o+, 97o+, 86o+, 76o, 65o, 54o",
+                "3bet_light": "98s, 87s, A6o, A2o-A3o, K4o, Q5o"
+            },
+            "25bb": {
+                "raise_allin": "22-TT, A9s-AJs, K5s-K7s, A2o-AQo",
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "A2s-A8s, K8s+, K2s-K4s, Q2s+, J2s+, T2s+, 92s-97s, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K5o+, K2o, Q3o+, J4o+, T6o+, 96o+, 86o+, 75o+, 64o+, 53o+",
+                "3bet_light": "98s, K3o-K4o, Q2o"
+            },
+            "20bb": {
+                "raise_allin": "22-JJ, A8s-AQs, K5s-K7s, T8s+, 98s, A2o+, KQo",
+                "3bet": "QQ+, AKs",
+                "call": "A2s-A7s, K8s+, K2s-K4s, Q2s+, J2s+, T2s-T7s, 92s-97s, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K3o-KJo, Q2o+, J4o+, T6o+, 96o+, 85o+, 75o+, 64o+, 53o+",
+                "3bet_light": "K2o"
+            },
+            "17bb": {
+                "raise_allin": "22+, A2s+, KTs+, QJs, A2o+, KTo+, QJo",
+                "call": "K2s-K9s, Q2s-QTs, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K2o-K9o, Q2o-QTo, J3o+, T6o+, 96o+, 86o+, 75o+, 64o+, 53o+"
+            },
+            "15bb": {
+                "raise_allin": "22-QQ, A4s+, KQs, K5s-K7s, T8s+, 98s, A2o+, KJo+",
+                "3bet": "KK+",
+                "call": "A2s-A3s, K8s-KJs, K2s-K4s, Q2s+, J2s+, T2s-T7s, 92s-97s, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K2o-KTo, Q3o+, J3o+, T6o+, 96o+, 86o+, 75o+, 64o+, 53o+",
+                "3bet_light": "Q2o"
+            },
+            "12bb": {
+                "raise_allin": "22+, A2s+, KQs, T8s+, 98s, A2o+, KJo+",
+                "call": "K2s-KJs, Q2s+, J2s+, T2s-T7s, 92s-97s, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K2o-KTo, Q2o+, J3o+, T6o+, 96o+, 86o+, 75o+, 64o+, 53o+"
+            },
+            "10bb": {
+                "raise_allin": "22+, A2s+, KTs+, QJs, A2o+, KTo+, QJo",
+                "call": "K2s-K9s, Q2s-QTs, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K2o-K9o, Q2o-QTo, J3o+, T6o+, 96o+, 86o+, 75o+, 64o+, 53o+"
             }
         },
         "vs CO": {
+            "100bb": {
+                "3bet": "TT+, AJs+, KQs, AQo+",
+                "call": "22-99, A6s-ATs, A2s-A3s, K7s-KJs, K2s-K5s, Q2s+, J2s-J7s, T2s-T7s, 92s-96s, 82s-86s, 72s-75s, 62s-64s, 52s+, 42s+, 32s, A2o-AJo, K6o+, Q8o+, J8o+, T8o+, 98o, 87o, 76o",
+                "3bet_light": "A4s-A5s, K6s, J8s+, T8s+, 97s+, 87s, 76s, 65s"
+            },
             "50bb": {
                 "3bet": "99+, AQs+, AQo+",
-                "3bet_l": "76s, 98s, T9s, T7s, J8s, A5o-A6o, K7o",
-                "call": "22-88, A2s-AJs, K2s-KQs, Q2s-QJs, J2s-J7s, J9s-JTs, T2s-T6s, T8s, 92s-97s, 82s-87s, 72s-75s, 62s-65s, 52s-54s, 42s-43s, 32s, AJo-A7o, A4o-A2o, KQo-K8o, QJo-Q8o, JTo-J9o, T9o-T8o, 98o, 87o, 76o, 65o"
+                "call": "22-88, A2s-AJs, K2s+, Q2s+, J9s+, J2s-J7s, T8s, T2s-T6s, 92s-97s, 82s+, 72s-75s, 62s+, 52s+, 42s+, 32s, A7o-AJo, A2o-A4o, K8o+, K6o, Q8o+, J8o+, T8o+, 98o, 87o, 76o",
+                "3bet_light": "J8s, T9s, T7s, 98s, 76s, A5o-A6o, K7o"
+            },
+            "25bb": {
+                "raise_allin": "22-TT, K6s-K8s, ATo-AQo, A3o-A7o",
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "A2s-AJs, K9s+, K2s-K5s, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A8o-A9o, K5o+, K2o-K3o, Q4o+, J7o+, T7o+, 97o+, 86o+, 75o+, 64o+, 54o",
+                "3bet_light": "A2o, K4o, Q3o"
+            },
+            "20bb": {
+                "raise_allin": "22-JJ, A8s-AQs, K6s-K7s, T8s+, 98s, A2o+, KQo",
+                "3bet": "QQ+, AKs",
+                "call": "A2s-A7s, K8s+, K2s-K5s, Q2s+, J2s+, T2s-T7s, 92s-97s, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K3o-KJo, Q2o+, J5o+, T6o+, 96o+, 85o+, 75o+, 64o+, 53o+",
+                "3bet_light": "K2o"
+            },
+            "17bb": {
+                "raise_allin": "22+, A2s+, KTs+, QJs, A2o+, KTo+, QJo",
+                "call": "K2s-K9s, Q2s-QTs, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K2o-K9o, Q2o-QTo, J4o+, T6o+, 96o+, 86o+, 75o+, 64o+, 53o+"
+            },
+            "15bb": {
+                "raise_allin": "22+, A6s+, KQs, K5s-K7s, T8s+, 98s, A2o+, KJo+",
+                "call": "A2s-A5s, K8s-KJs, K2s-K4s, Q2s+, J2s+, T2s-T7s, 92s-97s, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K2o-KTo, Q2o+, J5o+, T6o+, 96o+, 86o+, 75o+, 64o+, 53o+"
+            },
+            "12bb": {
+                "raise_allin": "22+, A2s+, KQs, T8s+, 98s, A2o+, KJo+",
+                "call": "K2s-KJs, Q2s+, J2s+, T2s-T7s, 92s-97s, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K2o-KTo, Q2o+, J4o+, T6o+, 96o+, 86o+, 75o+, 64o+, 53o+"
+            },
+            "10bb": {
+                "raise_allin": "22+, A2s+, KTs+, QJs, A2o+, KTo+, QJo",
+                "call": "K2s-K9s, Q2s-QTs, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K2o-K9o, Q2o-QTo, J4o+, T6o+, 96o+, 86o+, 75o+, 64o+, 53o+"
             }
         },
-        "vs sb_limp": {
+        "vs HJ": {
+            "100bb": {
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "22-TT, A6s-AJs, A2s-A3s, K7s+, K2s-K5s, Q8s+, Q2s-Q6s, J2s-J7s, T2s-T7s, 92s-97s, 83s-86s, 73s+, 62s+, 52s+, 42s+, 32s, A2o-AQo, K8o+, Q9o+, J9o+, T8o+, 98o",
+                "3bet_light": "A4s-A5s, K6s, Q7s, J8s+, T8s+, 98s, 87s"
+            },
             "50bb": {
-                "raise": "55+, A2s+, K8s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 75s+, 64s+, 53s+, A8o+, KJo+",
-                "raise_l": "43s, 62s, 72s, 82s, Q2o-Q5o, J2o-J5o, T2o-T5o, 92o-95o",
-                "check": "44-22, K7s-K2s, Q7s-Q2s, J7s-J2s, T7s-T2s, 96s-92s, 85s-83s, 74s-73s, 63s, 52s, 42s, 32s, A7o-A2o, KTo-K2o, QJo-Q6o, Q4o-Q3o, JTo-J6o, T9o-T6o, 98o-96o, 87o-82o, 76o-72o, 65o-62o, 54o-52o, 43o-42o, 32o"
+                "3bet": "TT+, AQs+, AKo",
+                "call": "22-99, A2s-AJs, K7s+, K2s-K5s, Q2s+, JTs, J2s-J7s, T2s-T7s, 92s-97s, 83s-86s, 73s+, 62s+, 52s+, 42s+, 32s, A6o-AQo, A2o-A4o, K7o+, Q9o+, J8o+, T8o+, 98o",
+                "3bet_light": "K6s, J8s-J9s, T8s+, 98s, 87s, A5o"
+            },
+            "25bb": {
+                "raise_allin": "22-TT, AJo-AQo, A4o-A7o, A2o",
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "A2s-AJs, K2s+, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A8o-ATo, K3o+, Q7o+, J7o+, T7o+, 97o+, 86o+, 76o, 65o, 54o",
+                "3bet_light": "A3o, K2o"
+            },
+            "20bb": {
+                "raise_allin": "22-JJ, AJs-AQs, ATo+, A5o-A7o",
+                "3bet": "QQ+, AKs",
+                "call": "A2s-ATs, K2s+, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A8o-A9o, A3o-A4o, K2o+, Q7o+, J7o+, T7o+, 97o+, 86o+, 75o+, 65o, 54o",
+                "3bet_light": "A2o"
+            },
+            "17bb": {
+                "raise_allin": "22+, A5s+, KQs, A6o+, KQo",
+                "call": "A2s-A4s, K2s-KJs, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A2o-A5o, K2o-KJo, Q2o+, J6o+, T7o+, 96o+, 86o+, 75o+, 64o+, 53o+"
+            },
+            "15bb": {
+                "raise_allin": "22-KK, AJs+, A5s-A7s, ATo+, A5o-A7o",
+                "call": "AA+, A8s-ATs, A2s-A4s, K2s+, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A8o-A9o, A2o-A4o, K2o+, Q6o+, J7o+, T7o+, 97o+, 86o+, 75o+, 64o+, 54o"
+            },
+            "12bb": {
+                "raise_allin": "22+, A4s+, KQs, A5o+, KQo",
+                "call": "A2s-A3s, K2s-KJs, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A2o-A4o, K2o-KJo, Q3o+, J7o+, T7o+, 96o+, 86o+, 75o+, 64o+, 53o+"
+            },
+            "10bb": {
+                "raise_allin": "22+, A5s+, KQs, A6o+, KQo",
+                "call": "A2s-A4s, K2s-KJs, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A2o-A5o, K2o-KJo, Q2o+, J6o+, T7o+, 96o+, 86o+, 75o+, 64o+, 53o+"
             }
         },
-        "vs sb_raise": {
+        "vs LJ": {
+            "100bb": {
+                "3bet": "QQ+, AKs, AKo",
+                "call": "22-JJ, A6s-AQs, A2s-A3s, K8s+, K2s-K6s, Q9s+, Q2s-Q7s, J2s-J9s, T2s-T8s, 93s-97s, 84s-86s, 74s-75s, 63s+, 52s+, 42s+, 32s, A3o-AQo, K9o+, Q9o+, J9o+, T9o, 98o",
+                "3bet_light": "A4s-A5s, K7s, Q8s, JTs, T9s, 98s, 87s, 76s"
+            },
             "50bb": {
-                "3bet": "99+, AJs+, AQo+",
-                "3bet_l": "87s, 76s, A2o-A4o, K5o-K6o, Q7o, J7o",
-                "call": "A2s-ATs, 88-22, KQs-K2s, QJs-Q2s, JTs-J2s, T9s-T2s, 98s-92s, 86s-84s, 75s-73s, 65s-62s, 54s-52s, 43s-42s, 32s, A5o-AJo, K7o-KQo, QJo-Q8o, Q4o-Q3o, JTo-J8o, T9o-T7o, 98o-97o, 87o"
+                "3bet": "JJ+, AKs, AKo",
+                "call": "22-TT, A2s-AQs, K8s+, K2s-K5s, Q9s+, Q2s-Q7s, J9s+, J2s-J7s, T2s-T8s, 92s+, 83s+, 73s+, 62s-64s, 52s+, 42s+, 32s, A6o-AQo, A3o-A4o, K8o+, Q9o+, J9o+, T9o, 98o",
+                "3bet_light": "K6s-K7s, Q8s, J8s, T9s, 65s, A5o"
+            },
+            "25bb": {
+                "raise_allin": "77-TT, 22-33, AQo",
+                "3bet": "JJ+, AQs+, AKo",
+                "call": "44-66, A2s-AJs, K2s+, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A4o-AJo, A2o, K4o+, Q8o+, J8o+, T8o+, 97o+, 86o+, 76o, 65o, 54o",
+                "3bet_light": "A3o, K2o"
+            },
+            "20bb": {
+                "raise_allin": "22-JJ, AQs, A7s, AJo+, A7o",
+                "3bet": "QQ+, AKs",
+                "call": "A8s-AJs, A2s-A6s, K2s+, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A8o-ATo, A3o-A6o, K3o+, Q7o+, J7o+, T7o+, 97o+, 86o+, 75o+, 65o, 54o",
+                "3bet_light": "A2o"
+            },
+            "17bb": {
+                "raise_allin": "22+, A2s+, A7o+",
+                "call": "K2s+, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A2o-A6o, K2o+, Q2o+, J7o+, T7o+, 96o+, 86o+, 75o+, 64o+, 53o+"
+            },
+            "15bb": {
+                "raise_allin": "22-KK, AJs+, A5s-A7s, ATo+, A6o-A7o",
+                "call": "AA+, A8s-ATs, A2s-A4s, K2s+, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A8o-A9o, A2o-A5o, K2o+, Q6o+, J7o+, T7o+, 97o+, 86o+, 75o+, 65o, 54o"
+            },
+            "12bb": {
+                "raise_allin": "22-KK, AJs+, A5s-A7s, ATo+, A6o",
+                "call": "AA+, A8s-ATs, A2s-A4s, K2s+, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A7o-A9o, A2o-A5o, K2o+, Q5o+, J7o+, T7o+, 96o+, 86o+, 75o+, 64o+, 54o"
+            },
+            "10bb": {
+                "raise_allin": "22+, A2s+, A7o+",
+                "call": "K2s+, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A2o-A6o, K2o+, Q2o+, J7o+, T7o+, 96o+, 86o+, 75o+, 64o+, 53o+"
+            }
+        },
+        "vs SB": {
+            "100bb": {
+                "3bet": "JJ+, AQs+, A4s-A5s, 98s, 87s, 76s, AKo, A2o-A3o, K6o, Q8o, J8o",
+                "call": "22-TT, A6s-AJs, A2s-A3s, K2s+, Q2s+, J2s+, T2s+, 95s-97s, 85s-86s, 74s-75s, 63s+, 52s+, 42s+, A4o-AQo, K7o+, Q9o+, J9o+, T8o+, 98o"
+            },
+            "50bb": {
+                "3bet": "99+, AJs+, 87s, 76s, AQo+, A2o-A4o, K5o-K6o, Q7o, J7o",
+                "call": "22-88, A2s-ATs, K2s+, Q2s+, J2s+, T2s+, 92s+, 84s-86s, 73s-75s, 62s+, 52s+, 42s+, 32s, A5o-AJo, K7o+, Q8o+, J8o+, T7o+, 97o+, 87o"
+            },
+            "25bb": {
+                "raise_allin": "22-66, ATo+, A2o-A3o",
+                "3bet": "TT-QQ, AQs+, K2o, Q6o",
+                "call": "KK+, 77-99, A2s-AJs, K2s+, Q2s+, J2s+, T2s+, 92s+, 82s+, 73s+, 62s+, 52s+, 42s+, 32s, A4o-A9o, K3o+, Q7o+, J7o+, T7o+, 97o+, 87o, 76o, 65o, 54o"
+            },
+            "20bb": {
+                "raise_allin": "TT-JJ, 22-77, ATs+, A2o+, K2o-K3o",
+                "call": "QQ+, 88-99, A2s-A9s, K2s+, Q2s+, J2s+, T2s+, 92s+, 84s+, 74s+, 63s+, 52s+, 42s+, 32s, K4o+, Q6o+, J7o+, T8o+, 98o"
+            },
+            "17bb": {
+                "raise_allin": "22-55, A6s+, A2s-A3s, K2s-K9s, Q2s-Q3s, A2o+, K2o+, Q2o-Q5o",
+                "call": "66+, A4s-A5s, KTs+, Q4s+, J2s+, T2s+, 92s+, 82s+, 74s+, 63s+, 52s+, 42s+, 32s, Q6o+, J4o+, T7o+, 97o+, 87o"
+            },
+            "15bb": {
+                "raise_allin": "22-66, A7s+, A2s-A3s, K2s-K3s, A2o+, K2o-K4o",
+                "call": "77+, A4s-A6s, K4s+, Q2s+, J2s+, T2s+, 95s+, 85s+, 74s+, 63s+, 52s+, 42s+, 32s, K5o+, Q7o+, J8o+, T8o+, 98o"
+            },
+            "12bb": {
+                "raise_allin": "22-55, A7s+, A2s-A3s, K2s-K4s, Q2s-Q3s, A2o+, K2o-KTo, Q2o-Q5o",
+                "call": "66+, A4s-A6s, K5s+, Q4s+, J2s+, T2s+, 92s+, 82s+, 73s+, 62s+, 52s+, 42s+, 32s, KJo+, Q6o+, J6o+, T7o+, 97o+, 86o+, 76o"
+            },
+            "10bb": {
+                "raise_allin": "22-55, A6s+, A2s-A3s, K2s-K9s, Q2s-Q3s, A2o+, K2o+, Q2o-Q5o",
+                "call": "66+, A4s-A5s, KTs+, Q4s+, J2s+, T2s+, 92s+, 82s+, 74s+, 63s+, 52s+, 42s+, 32s, Q6o+, J4o+, T7o+, 97o+, 87o"
+            }
+        },
+        "vs SB limp": {
+            "100bb": {
+                "3bet": "55+, A2s+, K8s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 82s, 75s+, 72s, 64s+, 62s, 53s+, 43s, A8o+, KJo+, Q2o-Q5o, J2o-J5o, T2o-T5o, 92o-95o",
+                "check": "22-44, K2s-K7s, Q2s-Q7s, J2s-J7s, T2s-T7s, 92s-96s, 83s-85s, 73s-74s, 63s, 52s, 42s, 32s, A2o-A7o, K2o-KTo, Q6o+, J6o+, T6o+, 96o+, 82o+, 72o+, 62o+, 52o+, 42o+, 32o"
+            },
+            "50bb": {
+                "3bet": "55+, A2s+, K8s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 82s, 75s+, 72s, 64s+, 62s, 53s+, 43s, A8o+, KJo+, Q2o-Q5o, J2o-J5o, T2o-T5o, 92o-95o",
+                "check": "22-44, K2s-K7s, Q2s-Q7s, J2s-J7s, T2s-T7s, 92s-96s, 83s-85s, 73s-74s, 63s, 52s, 42s, 32s, A2o-A7o, K2o-KTo, Q6o+, J6o+, T6o+, 96o+, 82o+, 72o+, 62o+, 52o+, 42o+, 32o"
+            },
+            "25bb": {
+                "raise_allin": "22-66, A7o-A9o, A2o-A3o",
+                "3bet": "77+, A6s+, KTs+, JTs, 92s, 82s, 72s, 62s, ATo+, KQo, Q2o, J2o-J4o, T2o-T5o, 92o-95o, 82o-85o",
+                "check": "A2s-A5s, K2s-K9s, Q2s+, J2s-J9s, T2s+, 93s+, 83s+, 73s+, 63s+, 52s+, 42s+, 32s, A4o-A6o, K2o-KJo, Q3o+, J5o+, T6o+, 96o+, 86o+, 72o+, 62o+, 52o+, 42o+, 32o"
+            },
+            "20bb": {
+                "raise_allin": "22-66, A2o-ATo",
+                "3bet": "77+, A8s+, KJs+, AJo+, KQo, Q2o, J2o-J3o, T2o-T5o, 92o-95o, 82o-85o",
+                "check": "A2s-A7s, K2s-KTs, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K2o-KJo, Q3o+, J4o+, T6o+, 96o+, 86o+, 72o+, 62o+, 52o+, 42o+, 32o"
+            },
+            "17bb": {
+                "raise_allin": "22-55, A2s-A6s, A2o-A9o, K2o-K8o, Q2o-Q5o",
+                "3bet": "66+, A7s+, KTs+, ATo+, KJo+, J2o-J4o, T2o-T5o, 92o-95o, 82o-85o, 72o-74o",
+                "check": "K2s-K9s, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K9o-KTo, Q6o+, J5o+, T6o+, 96o+, 86o+, 75o+, 62o+, 52o+, 42o+, 32o"
+            },
+            "15bb": {
+                "raise_allin": "22-66, A2o-ATo, K2o-K3o, Q2o",
+                "3bet": "77+, A8s+, KTs+, AJo+, KJo+, Q3o-Q4o, J2o-J4o, T2o-T5o, 92o-95o, 82o-85o",
+                "check": "A2s-A7s, K2s-K9s, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K4o-KTo, Q5o+, J5o+, T6o+, 96o+, 86o+, 72o+, 62o+, 52o+, 42o+, 32o"
+            },
+            "12bb": {
+                "raise_allin": "22-66, A2s-A7s, A2o-ATo, K2o-K4o, Q2o-Q3o",
+                "3bet": "77+, A8s+, KTs+, AJo+, KJo+, Q4o, J2o-J4o, T2o-T5o, 92o-95o, 82o-85o",
+                "check": "K2s-K9s, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K5o-KTo, Q5o+, J5o+, T6o+, 96o+, 86o+, 72o+, 62o+, 52o+, 42o+, 32o"
+            },
+            "10bb": {
+                "raise_allin": "22-55, A2s-A6s, A2o-A9o, K2o-K8o, Q2o-Q5o",
+                "3bet": "66+, A7s+, KTs+, ATo+, KJo+, J2o-J4o, T2o-T5o, 92o-95o, 82o-85o, 72o-74o",
+                "check": "K2s-K9s, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K9o-KTo, Q6o+, J5o+, T6o+, 96o+, 86o+, 75o+, 62o+, 52o+, 42o+, 32o"
             }
         }
     }
