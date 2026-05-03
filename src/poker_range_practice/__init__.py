@@ -19,7 +19,7 @@ from .poker_hands import (
     Hand,
 )
 from .range_manager import RangeManager
-from .flop_strategy import (
+from .flop import (
     Card as FlopCard,
     get_cbet_recommendation,
     get_bb_defense_recommendation,
