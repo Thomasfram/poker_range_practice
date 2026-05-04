@@ -82,6 +82,8 @@ def get_bb_defense_recommendation(
         elif has_top_pair and top_kicker >= 11:
             action = 'raise'
         # XR bluff
+        elif has_flush_draw or has_oesd:
+            action = 'raise'
         elif has_gutshot:
             action = 'raise'
         elif has_bot_pair:

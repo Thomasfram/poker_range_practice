@@ -14,6 +14,15 @@ const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'];
 const SUITS = ['♠', '♥', '♦', '♣'];
 const RED_SUITS = new Set(['♥', '♦']);
 
+// All valid (hero, villain) flop situations
+const FLOP_EVAL_SITUATIONS = [
+    { key: 'BTN/BB', label: 'BTN vs BB', hero: 'BTN', villain: 'BB', type: 'cbet' },
+    { key: 'BTN/SB', label: 'BTN vs SB', hero: 'BTN', villain: 'SB', type: 'cbet' },
+    { key: 'CO/BB',  label: 'CO vs BB',  hero: 'CO',  villain: 'BB', type: 'cbet' },
+    { key: 'BB/BTN', label: 'BB vs BTN', hero: 'BB',  villain: 'BTN', type: 'defense' },
+    { key: 'BB/CO',  label: 'BB vs CO',  hero: 'BB',  villain: 'CO',  type: 'defense' },
+];
+
 // State
 const flopState = {
     hero: null,
@@ -28,12 +37,23 @@ const flopPractice = {
     stats: { correct: 0, total: 0 },
 };
 
+// Eval mode state
+const flopEval = {
+    active: false,
+    situations: new Set(),  // Set of situation keys e.g. 'BTN/BB'
+    depths: new Set(),      // Set of stack depth values (numbers)
+    handCount: 20,
+    handsDone: 0,
+    results: {},  // key -> { correct, total, hero, villain, stackDepth, label }
+};
+
 // ─── Boot ────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initFlopConfig();
     initFlopNavigation();
+    initFlopEvalConfig();
 });
 
 // ─── Tab Navigation ──────────────────────────
@@ -142,33 +162,266 @@ function updateFlopSummary() {
 function updateFlopStartBtn() {
     const btn = document.getElementById('flop-start-btn');
     if (!btn) return;
-    const { hero, villain, stackDepth } = flopState;
-    btn.disabled = !hero || !villain || !stackDepth || hero === villain;
+    if (flopEval.active) {
+        btn.disabled = flopEval.situations.size === 0 || flopEval.depths.size === 0;
+    } else {
+        const { hero, villain, stackDepth } = flopState;
+        btn.disabled = !hero || !villain || !stackDepth || hero === villain;
+    }
+}
+
+// ─── Eval Config ─────────────────────────────
+
+function initFlopEvalConfig() {
+    document.getElementById('flop-mode-classic').addEventListener('click', () => setFlopMode(false));
+    document.getElementById('flop-mode-eval').addEventListener('click',   () => setFlopMode(true));
+
+    // Situation toggle buttons
+    const sitContainer = document.getElementById('flop-eval-situations');
+    FLOP_EVAL_SITUATIONS.forEach(sit => {
+        const btn = document.createElement('button');
+        btn.className = 'eval-toggle-btn';
+        btn.innerHTML = `${sit.label} <span class="sit-type-badge">${sit.type === 'cbet' ? 'cbet' : 'défense'}</span>`;
+        btn.dataset.key = sit.key;
+        btn.addEventListener('click', () => {
+            if (flopEval.situations.has(sit.key)) {
+                flopEval.situations.delete(sit.key);
+                btn.classList.remove('selected');
+            } else {
+                flopEval.situations.add(sit.key);
+                btn.classList.add('selected');
+            }
+            updateFlopStartBtn();
+        });
+        sitContainer.appendChild(btn);
+    });
+
+    // Stack depth toggle buttons
+    const depthContainer = document.getElementById('flop-eval-depths');
+    STACK_DEPTHS.forEach(sd => {
+        const btn = document.createElement('button');
+        btn.className = 'eval-toggle-btn';
+        btn.textContent = sd.label;
+        btn.dataset.value = sd.value;
+        btn.addEventListener('click', () => {
+            if (flopEval.depths.has(sd.value)) {
+                flopEval.depths.delete(sd.value);
+                btn.classList.remove('selected');
+            } else {
+                flopEval.depths.add(sd.value);
+                btn.classList.add('selected');
+            }
+            updateFlopStartBtn();
+        });
+        depthContainer.appendChild(btn);
+    });
+
+    // Hand count preset buttons
+    document.getElementById('flop-eval-count-buttons').addEventListener('click', e => {
+        const btn = e.target.closest('.eval-toggle-btn');
+        if (!btn) return;
+        document.querySelectorAll('#flop-eval-count-buttons .eval-toggle-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        flopEval.handCount = parseInt(btn.dataset.value, 10);
+    });
+}
+
+function setFlopMode(evalMode) {
+    flopEval.active = evalMode;
+    document.getElementById('flop-mode-classic').classList.toggle('active', !evalMode);
+    document.getElementById('flop-mode-eval').classList.toggle('active', evalMode);
+    document.getElementById('flop-classic-config').style.display = evalMode ? 'none' : '';
+    document.getElementById('flop-eval-config').style.display    = evalMode ? '' : 'none';
+
+    // Reset eval state
+    flopEval.situations.clear();
+    flopEval.depths.clear();
+    flopEval.handsDone = 0;
+    flopEval.results = {};
+    document.querySelectorAll('#flop-eval-situations .eval-toggle-btn, #flop-eval-depths .eval-toggle-btn').forEach(b => b.classList.remove('selected'));
+
+    updateFlopStartBtn();
 }
 
 // ─── Navigation ──────────────────────────────
 
 function initFlopNavigation() {
-    const startBtn = document.getElementById('flop-start-btn');
-    const backBtn = document.getElementById('flop-back-btn');
+    const startBtn  = document.getElementById('flop-start-btn');
+    const backBtn   = document.getElementById('flop-back-btn');
     const configScr = document.getElementById('flop-config-screen');
     const practiceScr = document.getElementById('flop-practice-screen');
 
     if (startBtn) {
         startBtn.addEventListener('click', () => {
             if (startBtn.disabled) return;
-            startFlopPractice(configScr, practiceScr);
+            if (flopEval.active) {
+                startFlopEvalSession(configScr, practiceScr);
+            } else {
+                startFlopPractice(configScr, practiceScr);
+            }
         });
     }
     if (backBtn) {
         backBtn.addEventListener('click', () => {
             practiceScr.classList.remove('active');
             configScr.classList.add('active');
+            document.getElementById('flop-eval-progress').classList.add('hidden');
         });
     }
 
     const nextBtn = document.getElementById('flop-next-btn');
-    if (nextBtn) nextBtn.addEventListener('click', dealFlopHand);
+    if (nextBtn) nextBtn.onclick = dealFlopHand;
+
+    document.getElementById('flop-results-back-btn').addEventListener('click', flopResultsBackToMenu);
+    document.getElementById('flop-results-retry-btn').addEventListener('click', flopResultsRetry);
+}
+
+// ─── Eval Session ────────────────────────────
+
+function startFlopEvalSession(configScr, practiceScr) {
+    flopEval.handsDone = 0;
+    flopEval.results = {};
+    flopPractice.stats = { correct: 0, total: 0 };
+    updateFlopStats();
+
+    configScr.classList.remove('active');
+    practiceScr.classList.add('active');
+
+    const progress = document.getElementById('flop-eval-progress');
+    progress.classList.remove('hidden');
+    updateFlopEvalProgress();
+
+    dealFlopEvalHand();
+}
+
+async function dealFlopEvalHand() {
+    // Pick random (situation, stackDepth) combo
+    const situations = [...flopEval.situations];
+    const depths = [...flopEval.depths];
+    const sitKey = situations[Math.floor(Math.random() * situations.length)];
+    const depthVal = depths[Math.floor(Math.random() * depths.length)];
+
+    const sit = FLOP_EVAL_SITUATIONS.find(s => s.key === sitKey);
+    const sd  = STACK_DEPTHS.find(s => s.value === depthVal);
+
+    // Override flopState for this hand
+    flopState.hero       = sit.hero;
+    flopState.villain    = sit.villain;
+    flopState.stackDepth = sd;
+
+    // Store current combo for result tracking
+    flopEval._currentCombo = { key: sitKey, hero: sit.hero, villain: sit.villain, stackDepth: depthVal, label: sit.label, sdLabel: sd.label };
+
+    // Update display
+    document.getElementById('hero-pos-label').textContent    = sit.hero;
+    document.getElementById('villain-pos-label').textContent = sit.villain;
+    document.getElementById('flop-config-display').textContent = `${sit.hero} vs ${sit.villain} — ${sd.label}`;
+
+    await dealFlopHand();
+}
+
+function updateFlopEvalProgress() {
+    const pct = Math.round((flopEval.handsDone / flopEval.handCount) * 100);
+    document.getElementById('flop-eval-progress-bar').style.width = `${pct}%`;
+    document.getElementById('flop-eval-progress-label').textContent = `${flopEval.handsDone} / ${flopEval.handCount}`;
+}
+
+function trackFlopEvalResult(isCorrect) {
+    if (!flopEval.active || !flopEval._currentCombo) return;
+    const { key, hero, villain, stackDepth, label, sdLabel } = flopEval._currentCombo;
+    const rKey = `${key}@${stackDepth}`;
+    if (!flopEval.results[rKey]) {
+        flopEval.results[rKey] = { correct: 0, total: 0, hero, villain, stackDepth, label, sdLabel };
+    }
+    flopEval.results[rKey].total++;
+    if (isCorrect) flopEval.results[rKey].correct++;
+
+    flopEval.handsDone++;
+    updateFlopEvalProgress();
+
+    const nextBtn = document.getElementById('flop-next-btn');
+    if (flopEval.handsDone >= flopEval.handCount) {
+        nextBtn.textContent = 'Voir les résultats →';
+        nextBtn.onclick = showFlopEvalResults;
+    } else {
+        nextBtn.textContent = 'Main suivante →';
+        nextBtn.onclick = dealFlopEvalHand;
+    }
+}
+
+function showFlopEvalResults() {
+    document.getElementById('flop-practice-screen').classList.remove('active');
+    document.getElementById('flop-results-screen').classList.add('active');
+    renderFlopResults();
+}
+
+function renderFlopResults() {
+    const overall   = document.getElementById('flop-results-overall');
+    const tableWrap = document.getElementById('flop-results-table');
+
+    const totalCorrect = Object.values(flopEval.results).reduce((s, r) => s + r.correct, 0);
+    const totalTotal   = Object.values(flopEval.results).reduce((s, r) => s + r.total, 0);
+    const globalPct    = totalTotal > 0 ? Math.round((totalCorrect / totalTotal) * 100) : 0;
+    const globalColor  = globalPct >= 75 ? '#28a745' : globalPct >= 50 ? '#f0ad4e' : '#dc3545';
+
+    overall.innerHTML = `
+        <div class="results-score" style="color:${globalColor}">
+            ${totalCorrect} / ${totalTotal}
+            <span class="results-pct">${globalPct}%</span>
+        </div>
+    `;
+
+    const rows = Object.values(flopEval.results).sort((a, b) => (a.correct / a.total) - (b.correct / b.total));
+
+    let html = `
+        <table class="results-table">
+            <thead>
+                <tr><th>Situation</th><th>Stack</th><th>Score</th></tr>
+            </thead>
+            <tbody>
+    `;
+    rows.forEach(r => {
+        const pct   = Math.round((r.correct / r.total) * 100);
+        const color = pct >= 75 ? '#28a745' : pct >= 50 ? '#f0ad4e' : '#dc3545';
+        const icon  = pct >= 75 ? '✓' : pct >= 50 ? '~' : '✗';
+        html += `
+            <tr>
+                <td class="results-label">${r.label}</td>
+                <td class="results-depth">${r.sdLabel}</td>
+                <td class="results-score-cell" style="color:${color}">
+                    <span class="results-icon">${icon}</span>
+                    ${r.correct}/${r.total} <span class="results-pct-sm">${pct}%</span>
+                </td>
+            </tr>
+        `;
+    });
+    html += '</tbody></table>';
+    tableWrap.innerHTML = html;
+}
+
+function flopResultsBackToMenu() {
+    document.getElementById('flop-results-screen').classList.remove('active');
+    document.getElementById('flop-config-screen').classList.add('active');
+    document.getElementById('flop-eval-progress').classList.add('hidden');
+    const nextBtn = document.getElementById('flop-next-btn');
+    nextBtn.textContent = 'Next Hand →';
+    nextBtn.onclick = dealFlopHand;
+}
+
+function flopResultsRetry() {
+    document.getElementById('flop-results-screen').classList.remove('active');
+    flopEval.handsDone = 0;
+    flopEval.results = {};
+    flopPractice.stats = { correct: 0, total: 0 };
+    updateFlopStats();
+
+    const practiceScr = document.getElementById('flop-practice-screen');
+    practiceScr.classList.add('active');
+    const progress = document.getElementById('flop-eval-progress');
+    progress.classList.remove('hidden');
+    updateFlopEvalProgress();
+
+    dealFlopEvalHand();
 }
 
 // ─── Practice Session ─────────────────────────
@@ -519,12 +772,16 @@ function showCbetFeedback(data, userAction, userSizing) {
         </div>
     `;
 
-    if (isCorrect) {
-        flopPractice.stats.correct++;
-    }
+    if (isCorrect) flopPractice.stats.correct++;
     flopPractice.stats.total++;
     updateFlopStats();
 
+    if (flopEval.active) {
+        trackFlopEvalResult(isCorrect);
+    } else if (nextBtn) {
+        nextBtn.textContent = 'Next Hand →';
+        nextBtn.onclick = dealFlopHand;
+    }
     if (nextBtn) nextBtn.style.display = 'block';
 }
 
@@ -704,6 +961,12 @@ function showBBDefenseFeedback(data, userAction, userSizing) {
     flopPractice.stats.total++;
     updateFlopStats();
 
+    if (flopEval.active) {
+        trackFlopEvalResult(isCorrect);
+    } else if (nextBtn) {
+        nextBtn.textContent = 'Next Hand →';
+        nextBtn.onclick = dealFlopHand;
+    }
     if (nextBtn) nextBtn.style.display = 'block';
 }
 

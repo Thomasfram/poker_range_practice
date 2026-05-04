@@ -57,6 +57,8 @@ def classify_board_vs_bb(board: list[Card]) -> BoardTexture:
     if is_monotone and r1 <= 11:
         return BoardTexture.DRAWY
     if r1 >= 13:
+        if has_flush_draw or is_monotone:
+            return BoardTexture.INTERMEDIAIRE
         return BoardTexture.EXTRA_DRY if (r2 >= 6 and (r2 - r3) >= 5) else BoardTexture.INTERMEDIAIRE
     if r1 >= 8:
         if not has_flush_draw and not low_connected:

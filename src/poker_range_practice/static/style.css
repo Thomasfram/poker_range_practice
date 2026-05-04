@@ -1112,6 +1112,25 @@ label {
         gap: 20px;
     }
 }
+/* ── Situation type badge (flop eval) ─────────────────────────────────────── */
+.sit-type-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: rgba(30, 60, 114, 0.15);
+    color: #1e3c72;
+    vertical-align: middle;
+    pointer-events: none;
+}
+
+.eval-toggle-btn.selected .sit-type-badge {
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+}
+
 /* ── Preflop eval mode ─────────────────────────────────────────────────────── */
 .mode-toggle {
     display: flex;
