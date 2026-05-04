@@ -1112,6 +1112,139 @@ label {
         gap: 20px;
     }
 }
+/* ── Flop eval results ─────────────────────────────────────────────────────── */
+
+.results-tendency {
+    margin: 14px auto 4px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    max-width: 520px;
+    text-align: left;
+}
+
+.tendency-passive    { background: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
+.tendency-aggressive { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+.tendency-neutral    { background: #d1ecf1; color: #0c5460; border-left: 4px solid #17a2b8; }
+.tendency-good       { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+
+.results-top-errors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    justify-content: center;
+}
+
+.error-chip-global {
+    background: #f0f4fa;
+    border: 1px solid #c8d6e8;
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #dc3545;
+}
+
+/* ── Result cards (shared preflop + flop) ──────────────────────────────────── */
+.result-card-item {
+    border: 1px solid #e0e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    background: #fff;
+}
+
+.result-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.result-card-identity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.result-pos-badge {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1e3c72;
+    letter-spacing: 0.5px;
+}
+
+.result-sit-badge {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #1e3c72;
+}
+
+.result-stack-pill {
+    background: #1e3c72;
+    color: #fff;
+    border-radius: 20px;
+    padding: 3px 11px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.result-score-badge {
+    border-radius: 10px;
+    padding: 7px 13px;
+    text-align: center;
+    white-space: nowrap;
+    min-width: 58px;
+    flex-shrink: 0;
+}
+
+.result-score-pct {
+    display: block;
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.result-score-frac {
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 600;
+    opacity: 0.8;
+    margin-top: 1px;
+}
+
+.result-card-label {
+    font-size: 0.81rem;
+    color: #666;
+    font-style: italic;
+    margin-top: 6px;
+}
+
+.result-sit-errors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px solid #f0f4fa;
+}
+
+.error-chip {
+    background: #fff0f0;
+    border: 1px solid #f5c6cb;
+    border-radius: 14px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #c0392b;
+}
+
 /* ── Situation type badge (flop eval) ─────────────────────────────────────── */
 .sit-type-badge {
     display: inline-block;
@@ -1256,58 +1389,7 @@ label {
 }
 
 .results-table-wrap {
-    overflow-x: auto;
-    margin-bottom: 24px;
-}
-
-.results-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.88rem;
-}
-
-.results-table th {
-    background: #f0f4fa;
-    color: #1e3c72;
-    text-align: left;
-    padding: 8px 10px;
-    font-weight: 700;
-    border-bottom: 2px solid #d0daea;
-}
-
-.results-table td {
-    padding: 8px 10px;
-    border-bottom: 1px solid #e8eef8;
-    vertical-align: middle;
-}
-
-.results-table tr:last-child td {
-    border-bottom: none;
-}
-
-.results-label {
-    font-weight: 500;
-    color: #222;
-}
-
-.results-pos, .results-depth {
-    color: #555;
-    white-space: nowrap;
-}
-
-.results-score-cell {
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.results-icon {
-    margin-right: 4px;
-}
-
-.results-pct-sm {
-    font-size: 0.8rem;
-    font-weight: 600;
-    opacity: 0.85;
+    margin-bottom: 20px;
 }
 
 .results-actions {
@@ -1329,4 +1411,73 @@ label {
 
 .scenario-label.hidden {
     display: none;
+}
+
+/* ── Eval session context header (preflop — inside white card) ─────────────── */
+.eval-context {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: rgba(30, 60, 114, 0.07);
+    border: 1px solid rgba(30, 60, 114, 0.14);
+    border-radius: 14px;
+    padding: 16px 24px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.eval-context.hidden {
+    display: none;
+}
+
+.eval-ctx-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.eval-ctx-pos {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e3c72;
+    letter-spacing: 0.5px;
+}
+
+.eval-ctx-stack {
+    background: #1e3c72;
+    color: #fff;
+    border-radius: 20px;
+    padding: 5px 16px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.eval-ctx-desc {
+    font-size: 0.88rem;
+    font-style: italic;
+    color: #555;
+    margin-top: 2px;
+}
+
+/* ── Flop eval context — on dark background ─────────────────────────────── */
+#flop-eval-context {
+    background: rgba(255, 255, 255, 0.13);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    margin-bottom: 12px;
+}
+
+#flop-eval-context .eval-ctx-pos {
+    color: #fff;
+    font-size: 1.4rem;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+#flop-eval-context .eval-ctx-stack {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
 }

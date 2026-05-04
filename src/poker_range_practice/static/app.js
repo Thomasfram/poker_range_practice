@@ -34,7 +34,10 @@ const actionFormGroup     = document.getElementById('action-form-group');
 const startBtn            = document.getElementById('start-btn');
 const currentHandDisplay  = document.getElementById('current-hand');
 const configDisplay       = document.getElementById('config-display');
-const scenarioLabel       = document.getElementById('scenario-label');
+const evalContext    = document.getElementById('eval-context');
+const evalCtxPos     = document.getElementById('eval-ctx-pos');
+const evalCtxStack   = document.getElementById('eval-ctx-stack');
+const evalCtxDesc    = document.getElementById('eval-ctx-desc');
 const preflopQuestion     = document.getElementById('preflop-question');
 const buttonGroup         = document.querySelector('.button-group');
 const backBtn             = document.getElementById('back-btn');
@@ -375,14 +378,16 @@ async function loadNextHand() {
             };
             currentConfig.availableActions = data.available_actions;
 
-            scenarioLabel.textContent = `[${data.position} — ${data.stack_depth}] ${data.scenario_label}`;
-            scenarioLabel.classList.remove('hidden');
+            evalCtxPos.textContent   = data.position;
+            evalCtxStack.textContent = data.stack_depth;
+            evalCtxDesc.textContent  = data.scenario_label;
+            evalContext.classList.remove('hidden');
             preflopQuestion.style.display = 'none';
             setupActionButtons();
         } else {
             const data = await fetch('/api/next-hand').then(r => r.json());
             currentHand = data.hand;
-            scenarioLabel.classList.add('hidden');
+            evalContext.classList.add('hidden');
             preflopQuestion.style.display = '';
         }
         currentHandDisplay.textContent = currentHand;
@@ -541,35 +546,27 @@ function renderResults() {
         return pa - pb;
     });
 
-    let html = `
-        <table class="results-table">
-            <thead>
-                <tr>
-                    <th>Range</th>
-                    <th>Position</th>
-                    <th>Stack</th>
-                    <th>Score</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
+    let html = '';
     rows.forEach(r => {
-        const pct = Math.round((r.correct / r.total) * 100);
-        const color = pct >= 75 ? '#28a745' : pct >= 50 ? '#f0ad4e' : '#dc3545';
-        const icon  = pct >= 75 ? '✓' : pct >= 50 ? '~' : '✗';
+        const pct    = Math.round((r.correct / r.total) * 100);
+        const bg     = pct >= 75 ? '#d4edda' : pct >= 50 ? '#fff3cd' : '#f8d7da';
+        const color  = pct >= 75 ? '#155724' : pct >= 50 ? '#856404' : '#721c24';
         html += `
-            <tr>
-                <td class="results-label">${r.label}</td>
-                <td class="results-pos">${r.position}</td>
-                <td class="results-depth">${r.stackDepth}</td>
-                <td class="results-score-cell" style="color:${color}">
-                    <span class="results-icon">${icon}</span>
-                    ${r.correct}/${r.total} <span class="results-pct-sm">${pct}%</span>
-                </td>
-            </tr>
+            <div class="result-card-item">
+                <div class="result-card-top">
+                    <div class="result-card-identity">
+                        <span class="result-pos-badge">${r.position}</span>
+                        <span class="result-stack-pill">${r.stackDepth}</span>
+                    </div>
+                    <div class="result-score-badge" style="background:${bg};color:${color}">
+                        <span class="result-score-pct">${pct}%</span>
+                        <span class="result-score-frac">${r.correct}/${r.total}</span>
+                    </div>
+                </div>
+                <div class="result-card-label">${r.label}</div>
+            </div>
         `;
     });
-    html += '</tbody></table>';
     tableWrap.innerHTML = html;
 }
 

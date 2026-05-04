@@ -317,6 +317,14 @@ async function dealFlopEvalHand() {
     document.getElementById('villain-pos-label').textContent = sit.villain;
     document.getElementById('flop-config-display').textContent = `${sit.hero} vs ${sit.villain} — ${sd.label}`;
 
+    // Prominent context strip
+    const ctx = document.getElementById('flop-eval-context');
+    if (ctx) {
+        ctx.classList.remove('hidden');
+        document.getElementById('flop-ctx-sit').textContent   = sit.label;
+        document.getElementById('flop-ctx-stack').textContent = sd.label;
+    }
+
     await dealFlopHand();
 }
 
@@ -326,15 +334,20 @@ function updateFlopEvalProgress() {
     document.getElementById('flop-eval-progress-label').textContent = `${flopEval.handsDone} / ${flopEval.handCount}`;
 }
 
-function trackFlopEvalResult(isCorrect) {
+function trackFlopEvalResult(isCorrect, userAction, correctAction) {
     if (!flopEval.active || !flopEval._currentCombo) return;
     const { key, hero, villain, stackDepth, label, sdLabel } = flopEval._currentCombo;
     const rKey = `${key}@${stackDepth}`;
     if (!flopEval.results[rKey]) {
-        flopEval.results[rKey] = { correct: 0, total: 0, hero, villain, stackDepth, label, sdLabel };
+        flopEval.results[rKey] = { correct: 0, total: 0, hero, villain, stackDepth, label, sdLabel, errors: {} };
     }
     flopEval.results[rKey].total++;
-    if (isCorrect) flopEval.results[rKey].correct++;
+    if (isCorrect) {
+        flopEval.results[rKey].correct++;
+    } else if (userAction && correctAction && userAction !== correctAction) {
+        const errKey = `${userAction}→${correctAction}`;
+        flopEval.results[rKey].errors[errKey] = (flopEval.results[rKey].errors[errKey] || 0) + 1;
+    }
 
     flopEval.handsDone++;
     updateFlopEvalProgress();
@@ -355,54 +368,123 @@ function showFlopEvalResults() {
     renderFlopResults();
 }
 
+const ACTION_LABELS_FR = {
+    fold:  'Fold',
+    call:  'Call',
+    raise: 'Check-Raise',
+    bet:   'Bet',
+    check: 'Check',
+};
+
 function renderFlopResults() {
     const overall   = document.getElementById('flop-results-overall');
     const tableWrap = document.getElementById('flop-results-table');
 
-    const totalCorrect = Object.values(flopEval.results).reduce((s, r) => s + r.correct, 0);
-    const totalTotal   = Object.values(flopEval.results).reduce((s, r) => s + r.total, 0);
+    const allResults   = Object.values(flopEval.results);
+    const totalCorrect = allResults.reduce((s, r) => s + r.correct, 0);
+    const totalTotal   = allResults.reduce((s, r) => s + r.total, 0);
     const globalPct    = totalTotal > 0 ? Math.round((totalCorrect / totalTotal) * 100) : 0;
     const globalColor  = globalPct >= 75 ? '#28a745' : globalPct >= 50 ? '#f0ad4e' : '#dc3545';
+
+    // Aggregate all errors
+    const allErrors = {};
+    allResults.forEach(r => {
+        Object.entries(r.errors || {}).forEach(([k, v]) => {
+            allErrors[k] = (allErrors[k] || 0) + v;
+        });
+    });
+
+    // Tendency analysis
+    const tooPassive    = (allErrors['fold→call']  || 0) + (allErrors['fold→raise']  || 0) + (allErrors['check→bet'] || 0);
+    const tooAggressive = (allErrors['call→fold']  || 0) + (allErrors['raise→fold']  || 0) + (allErrors['bet→check'] || 0);
+    const wrongIntensity = (allErrors['call→raise'] || 0) + (allErrors['raise→call'] || 0);
+    const totalErrors   = Object.values(allErrors).reduce((s, v) => s + v, 0);
+
+    let tendanceHtml = '';
+    if (totalErrors > 0) {
+        const dom = Math.max(tooPassive, tooAggressive, wrongIntensity);
+        if (dom === tooPassive && tooPassive > 0) {
+            tendanceHtml = `<div class="results-tendency tendency-passive">
+                📉 Trop passif — tu fold / check trop souvent (${tooPassive} erreur${tooPassive > 1 ? 's' : ''})
+            </div>`;
+        } else if (dom === tooAggressive && tooAggressive > 0) {
+            tendanceHtml = `<div class="results-tendency tendency-aggressive">
+                📈 Trop agressif — tu raise / bet trop souvent (${tooAggressive} erreur${tooAggressive > 1 ? 's' : ''})
+            </div>`;
+        } else if (wrongIntensity > 0) {
+            tendanceHtml = `<div class="results-tendency tendency-neutral">
+                🔄 Bonne direction mais intensité incorrecte — call/raise confondus (${wrongIntensity} erreur${wrongIntensity > 1 ? 's' : ''})
+            </div>`;
+        }
+
+        // Top global errors
+        const topErrors = Object.entries(allErrors)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 4);
+        if (topErrors.length > 0) {
+            tendanceHtml += `<div class="results-top-errors">
+                ${topErrors.map(([k, n]) => {
+                    const [ua, ca] = k.split('→');
+                    return `<span class="error-chip-global">
+                        ${ACTION_LABELS_FR[ua] || ua} → ${ACTION_LABELS_FR[ca] || ca}: ${n}×
+                    </span>`;
+                }).join('')}
+            </div>`;
+        }
+    } else if (totalTotal > 0) {
+        tendanceHtml = `<div class="results-tendency tendency-good">✨ Excellent — aucune erreur d'action !</div>`;
+    }
 
     overall.innerHTML = `
         <div class="results-score" style="color:${globalColor}">
             ${totalCorrect} / ${totalTotal}
             <span class="results-pct">${globalPct}%</span>
         </div>
+        ${tendanceHtml}
     `;
 
-    const rows = Object.values(flopEval.results).sort((a, b) => (a.correct / a.total) - (b.correct / b.total));
+    // Per-situation breakdown (sorted worst first)
+    const rows = allResults.sort((a, b) => (a.correct / a.total) - (b.correct / b.total));
 
-    let html = `
-        <table class="results-table">
-            <thead>
-                <tr><th>Situation</th><th>Stack</th><th>Score</th></tr>
-            </thead>
-            <tbody>
-    `;
+    let html = '';
     rows.forEach(r => {
         const pct   = Math.round((r.correct / r.total) * 100);
-        const color = pct >= 75 ? '#28a745' : pct >= 50 ? '#f0ad4e' : '#dc3545';
-        const icon  = pct >= 75 ? '✓' : pct >= 50 ? '~' : '✗';
+        const bg    = pct >= 75 ? '#d4edda' : pct >= 50 ? '#fff3cd' : '#f8d7da';
+        const color = pct >= 75 ? '#155724' : pct >= 50 ? '#856404' : '#721c24';
+
+        const errEntries = Object.entries(r.errors || {}).sort((a, b) => b[1] - a[1]);
+        const errHtml = errEntries.length > 0
+            ? errEntries.map(([k, n]) => {
+                const [ua, ca] = k.split('→');
+                return `<span class="error-chip">✗ ${ACTION_LABELS_FR[ua] || ua} → ${ACTION_LABELS_FR[ca] || ca}: ${n}×</span>`;
+            }).join('')
+            : '';
+
         html += `
-            <tr>
-                <td class="results-label">${r.label}</td>
-                <td class="results-depth">${r.sdLabel}</td>
-                <td class="results-score-cell" style="color:${color}">
-                    <span class="results-icon">${icon}</span>
-                    ${r.correct}/${r.total} <span class="results-pct-sm">${pct}%</span>
-                </td>
-            </tr>
+            <div class="result-card-item">
+                <div class="result-card-top">
+                    <div class="result-card-identity">
+                        <span class="result-sit-badge">${r.label}</span>
+                        <span class="result-stack-pill">${r.sdLabel}</span>
+                    </div>
+                    <div class="result-score-badge" style="background:${bg};color:${color}">
+                        <span class="result-score-pct">${pct}%</span>
+                        <span class="result-score-frac">${r.correct}/${r.total}</span>
+                    </div>
+                </div>
+                ${errHtml ? `<div class="result-sit-errors">${errHtml}</div>` : ''}
+            </div>
         `;
     });
-    html += '</tbody></table>';
-    tableWrap.innerHTML = html;
+
+    tableWrap.innerHTML = html || '<p style="color:#888;text-align:center">Aucun résultat</p>';
 }
 
 function flopResultsBackToMenu() {
     document.getElementById('flop-results-screen').classList.remove('active');
     document.getElementById('flop-config-screen').classList.add('active');
     document.getElementById('flop-eval-progress').classList.add('hidden');
+    document.getElementById('flop-eval-context').classList.add('hidden');
     const nextBtn = document.getElementById('flop-next-btn');
     nextBtn.textContent = 'Next Hand →';
     nextBtn.onclick = dealFlopHand;
@@ -777,7 +859,7 @@ function showCbetFeedback(data, userAction, userSizing) {
     updateFlopStats();
 
     if (flopEval.active) {
-        trackFlopEvalResult(isCorrect);
+        trackFlopEvalResult(isCorrect, userAction, data.correct_action);
     } else if (nextBtn) {
         nextBtn.textContent = 'Next Hand →';
         nextBtn.onclick = dealFlopHand;
@@ -962,7 +1044,7 @@ function showBBDefenseFeedback(data, userAction, userSizing) {
     updateFlopStats();
 
     if (flopEval.active) {
-        trackFlopEvalResult(isCorrect);
+        trackFlopEvalResult(isCorrect, userAction, data.correct_action);
     } else if (nextBtn) {
         nextBtn.textContent = 'Next Hand →';
         nextBtn.onclick = dealFlopHand;
