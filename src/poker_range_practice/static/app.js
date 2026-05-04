@@ -13,8 +13,13 @@ let currentConfig = {
     availableActions: []
 };
 
+// Eval multi-select state
+let evalSelectedPositions = new Set();
+let evalSelectedDepths = new Set();
+let evalAllDepths = [];  // union of depths for selected positions
+
 let currentHand = null;
-let currentScenario = { action: null, label: null };
+let currentScenario = { action: null, label: null, position: null, stackDepth: null };
 
 // DOM elements
 const configScreen        = document.getElementById('config-screen');
@@ -54,15 +59,31 @@ function setMode(mode) {
     evalMode = mode === 'eval';
     document.getElementById('mode-classic').classList.toggle('active', !evalMode);
     document.getElementById('mode-eval').classList.toggle('active', evalMode);
+
+    // Classic-only controls
+    document.getElementById('classic-position-group').style.display = evalMode ? 'none' : '';
+    document.getElementById('classic-depth-group').style.display    = evalMode ? 'none' : '';
     actionFormGroup.style.display = evalMode ? 'none' : '';
 
-    // Reset selects
+    // Eval-only controls
+    document.getElementById('eval-position-group').style.display = evalMode ? '' : 'none';
+    document.getElementById('eval-depth-group').style.display    = evalMode ? '' : 'none';
+
+    // Reset classic selects
     positionSelect.value = '';
     actionSelect.innerHTML = '<option value="">Choose action...</option>';
     actionSelect.disabled = true;
     stackDepthSelect.innerHTML = '<option value="">Choose stack depth...</option>';
     stackDepthSelect.disabled = true;
     startBtn.disabled = true;
+
+    // Reset eval multi-select
+    evalSelectedPositions.clear();
+    evalSelectedDepths.clear();
+    evalAllDepths = [];
+    document.getElementById('eval-depths-buttons').innerHTML = '';
+
+    if (evalMode) loadEvalPositions();
 }
 
 async function loadPositions() {
@@ -79,6 +100,85 @@ async function loadPositions() {
     }
 }
 
+async function loadEvalPositions() {
+    try {
+        const positions = await fetch('/api/positions').then(r => r.json());
+        const container = document.getElementById('eval-positions-buttons');
+        container.innerHTML = '';
+        positions.forEach(pos => {
+            const btn = document.createElement('button');
+            btn.className = 'eval-toggle-btn';
+            btn.textContent = pos;
+            btn.dataset.value = pos;
+            btn.addEventListener('click', () => toggleEvalPosition(pos, btn));
+            container.appendChild(btn);
+        });
+    } catch (e) {
+        console.error('Error loading eval positions:', e);
+    }
+}
+
+async function toggleEvalPosition(pos, btn) {
+    if (evalSelectedPositions.has(pos)) {
+        evalSelectedPositions.delete(pos);
+        btn.classList.remove('selected');
+    } else {
+        evalSelectedPositions.add(pos);
+        btn.classList.add('selected');
+    }
+    await refreshEvalDepths();
+    updateEvalStartBtn();
+}
+
+async function refreshEvalDepths() {
+    // Collect union of stack depths for all selected positions
+    const depthSet = new Set();
+    for (const pos of evalSelectedPositions) {
+        try {
+            const depths = await fetch(`/api/eval/stack-depths/${pos}`).then(r => r.json());
+            depths.forEach(d => depthSet.add(d));
+        } catch (e) {
+            console.error('Error loading eval stack depths:', e);
+        }
+    }
+    evalAllDepths = [...depthSet].sort();
+
+    // Remove depths no longer available
+    for (const d of evalSelectedDepths) {
+        if (!depthSet.has(d)) evalSelectedDepths.delete(d);
+    }
+
+    const container = document.getElementById('eval-depths-buttons');
+    container.innerHTML = '';
+    evalAllDepths.forEach(depth => {
+        const btn = document.createElement('button');
+        btn.className = 'eval-toggle-btn';
+        btn.textContent = depth;
+        btn.dataset.value = depth;
+        if (evalSelectedDepths.has(depth)) btn.classList.add('selected');
+        btn.addEventListener('click', () => toggleEvalDepth(depth, btn));
+        container.appendChild(btn);
+    });
+
+    document.getElementById('eval-depth-group').style.display =
+        evalSelectedPositions.size > 0 ? '' : 'none';
+}
+
+function toggleEvalDepth(depth, btn) {
+    if (evalSelectedDepths.has(depth)) {
+        evalSelectedDepths.delete(depth);
+        btn.classList.remove('selected');
+    } else {
+        evalSelectedDepths.add(depth);
+        btn.classList.add('selected');
+    }
+    updateEvalStartBtn();
+}
+
+function updateEvalStartBtn() {
+    startBtn.disabled = evalSelectedPositions.size === 0 || evalSelectedDepths.size === 0;
+}
+
 async function onPositionChange() {
     const position = positionSelect.value;
     actionSelect.innerHTML = '<option value="">Choose action...</option>';
@@ -89,33 +189,17 @@ async function onPositionChange() {
 
     if (!position) return;
 
-    if (evalMode) {
-        // Skip action select — load stack depths directly
-        try {
-            const depths = await fetch(`/api/eval/stack-depths/${position}`).then(r => r.json());
-            depths.forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d;
-                opt.textContent = d;
-                stackDepthSelect.appendChild(opt);
-            });
-            stackDepthSelect.disabled = depths.length === 0;
-        } catch (e) {
-            console.error('Error loading eval stack depths:', e);
-        }
-    } else {
-        try {
-            const actions = await fetch(`/api/actions/${position}`).then(r => r.json());
-            actions.forEach(action => {
-                const opt = document.createElement('option');
-                opt.value = action;
-                opt.textContent = action;
-                actionSelect.appendChild(opt);
-            });
-            actionSelect.disabled = false;
-        } catch (e) {
-            console.error('Error loading actions:', e);
-        }
+    try {
+        const actions = await fetch(`/api/actions/${position}`).then(r => r.json());
+        actions.forEach(action => {
+            const opt = document.createElement('option');
+            opt.value = action;
+            opt.textContent = action;
+            actionSelect.appendChild(opt);
+        });
+        actionSelect.disabled = false;
+    } catch (e) {
+        console.error('Error loading actions:', e);
     }
 }
 
@@ -144,24 +228,25 @@ function onStackDepthChange() {
 }
 
 async function startPractice() {
-    currentConfig.position   = positionSelect.value;
+    currentConfig.position   = evalMode ? null : positionSelect.value;
     currentConfig.action     = evalMode ? null : actionSelect.value;
-    currentConfig.stackDepth = stackDepthSelect.value;
+    currentConfig.stackDepth = evalMode ? null : stackDepthSelect.value;
 
     try {
         let data;
         if (evalMode) {
+            const positions   = [...evalSelectedPositions];
+            const stack_depths = [...evalSelectedDepths];
             const res = await fetch('/api/eval/start', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    position:    currentConfig.position,
-                    stack_depth: currentConfig.stackDepth,
-                }),
+                body: JSON.stringify({ positions, stack_depths }),
             });
             data = await res.json();
+            const posLabel   = positions.join(', ');
+            const depthLabel = stack_depths.join(', ');
             configDisplay.textContent =
-                `${currentConfig.position} — Évaluation — ${currentConfig.stackDepth} (${data.scenario_count} scénarios)`;
+                `${posLabel} — Évaluation — ${depthLabel} (${data.scenario_count} scénarios)`;
         } else {
             const res = await fetch('/api/start', {
                 method: 'POST',
@@ -257,10 +342,15 @@ async function loadNextHand() {
         if (evalMode) {
             const data = await fetch('/api/eval/next-hand').then(r => r.json());
             currentHand     = data.hand;
-            currentScenario = { action: data.scenario_action, label: data.scenario_label };
+            currentScenario = {
+                action:     data.scenario_action,
+                label:      data.scenario_label,
+                position:   data.position,
+                stackDepth: data.stack_depth,
+            };
             currentConfig.availableActions = data.available_actions;
 
-            scenarioLabel.textContent = data.scenario_label;
+            scenarioLabel.textContent = `[${data.position} — ${data.stack_depth}] ${data.scenario_label}`;
             scenarioLabel.classList.remove('hidden');
             preflopQuestion.style.display = 'none';
             setupActionButtons();
@@ -289,6 +379,8 @@ async function submitAnswer(action) {
                     hand:            currentHand,
                     scenario_action: currentScenario.action,
                     user_action:     action,
+                    position:        currentScenario.position,
+                    stack_depth:     currentScenario.stackDepth,
                 }),
             });
             data = await res.json();

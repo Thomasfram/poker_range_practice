@@ -30,14 +30,16 @@ from .flop import (
 
 
 class EvalStartRequest(BaseModel):
-    position: str
-    stack_depth: str
+    positions: list[str]
+    stack_depths: list[str]
 
 
 class EvalCheckRequest(BaseModel):
     hand: str
     scenario_action: str
     user_action: str
+    position: str
+    stack_depth: str
 
 
 class StartRequest(BaseModel):
@@ -438,27 +440,45 @@ def create_app() -> FastAPI:
 
     @app.post("/api/eval/start")
     def eval_start(body: EvalStartRequest, request: Request):
-        scenarios = _range_manager.get_eval_scenarios(body.position, body.stack_depth)
-        if not scenarios:
+        combos = []
+        for pos in body.positions:
+            for depth in body.stack_depths:
+                scenarios = _range_manager.get_eval_scenarios(pos, depth)
+                if scenarios:
+                    combos.append({"position": pos, "stack_depth": depth, "scenario_count": len(scenarios)})
+        if not combos:
             raise HTTPException(status_code=404, detail="Aucun scénario disponible")
-        request.session["eval_config"] = {
-            "position": body.position,
-            "stack_depth": body.stack_depth,
-        }
-        return {"success": True, "scenario_count": len(scenarios)}
+        request.session["eval_config"] = {"combos": combos}
+        total_scenarios = sum(c["scenario_count"] for c in combos)
+        return {"success": True, "scenario_count": total_scenarios}
 
     @app.get("/api/eval/next-hand")
     def eval_next_hand(request: Request):
         config = request.session.get("eval_config")
         if config is None:
             raise HTTPException(status_code=400, detail="No active eval session")
-        scenarios = _range_manager.get_eval_scenarios(config["position"], config["stack_depth"])
+        combo = random.choice(config["combos"])
+        scenarios = _range_manager.get_eval_scenarios(combo["position"], combo["stack_depth"])
         if not scenarios:
             raise HTTPException(status_code=400, detail="No scenarios available")
         scenario = random.choice(scenarios)
-        hand = random.choice(_all_hands)
+
+        hand = None
+        parent_open = scenario.get('parent_open')
+        if parent_open:
+            parent_pos, parent_action = parent_open
+            parent_range = _range_manager.get_range(parent_pos, parent_action, combo['stack_depth'])
+            if parent_range:
+                opened_hands = [h for h, act in parent_range.items() if act != 'fold']
+                if opened_hands:
+                    hand = random.choice(opened_hands)
+        if hand is None:
+            hand = random.choice(_all_hands)
+
         return {
             "hand": str(hand),
+            "position":           combo["position"],
+            "stack_depth":        combo["stack_depth"],
             "scenario_action":    scenario["action"],
             "scenario_label":     scenario["label"],
             "available_actions":  scenario["available_actions"],
@@ -466,11 +486,10 @@ def create_app() -> FastAPI:
 
     @app.post("/api/eval/check-answer")
     def eval_check_answer(body: EvalCheckRequest, request: Request):
-        config = request.session.get("eval_config")
-        if config is None:
+        if request.session.get("eval_config") is None:
             raise HTTPException(status_code=400, detail="No active eval session")
         current_range = _range_manager.get_range(
-            config["position"], body.scenario_action, config["stack_depth"]
+            body.position, body.scenario_action, body.stack_depth
         )
         if current_range is None:
             raise HTTPException(status_code=400, detail="Range not found")

@@ -1140,6 +1140,34 @@ label {
     background: #e8eef8;
 }
 
+.eval-toggle-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.eval-toggle-btn {
+    padding: 8px 16px;
+    border: 2px solid #1e3c72;
+    border-radius: 8px;
+    background: #fff;
+    color: #1e3c72;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.eval-toggle-btn:hover:not(.selected) {
+    background: #e8eef8;
+}
+
+.eval-toggle-btn.selected {
+    background: #1e3c72;
+    color: #fff;
+}
+
 .scenario-label {
     background: #e8f0fe;
     border-left: 4px solid #1e3c72;

@@ -5,6 +5,24 @@ import json
 from pathlib import Path
 from .poker_hands import parse_range_notation
 
+_POSITION_ORDER = ['LJ', 'HJ', 'CO', 'BTN', 'SB', 'BB']
+
+
+def _parent_open_range(position: str, action: str) -> tuple[str, str] | None:
+    """Return (position, 'open') when this scenario requires hero to have already opened.
+
+    A scenario is a "hero opened first" situation when the villain acts AFTER the hero
+    in position order (e.g. CO/vs BTN: BTN is after CO, so CO opened).
+    """
+    if not action.startswith('vs '):
+        return None
+    opponent = action[3:]
+    if position not in _POSITION_ORDER or opponent not in _POSITION_ORDER:
+        return None
+    if _POSITION_ORDER.index(opponent) > _POSITION_ORDER.index(position):
+        return (position, 'open')
+    return None
+
 
 class RangeManager:
     """Manages loading and querying poker ranges."""
@@ -82,10 +100,12 @@ class RangeManager:
         for action, stack_data in self.ranges.get(position, {}).items():
             if not isinstance(stack_data, dict) or stack_depth not in stack_data:
                 continue
+            parent = _parent_open_range(position, action)
             scenarios.append({
                 'action':            action,
                 'label':             labels.get(f'{position}/{action}', action),
                 'available_actions': self.get_available_range_actions(position, action, stack_depth),
+                'parent_open':       parent,  # (position, 'open') or None
             })
         return scenarios
     

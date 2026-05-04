@@ -48,11 +48,18 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
+                    <!-- Classic mode: single position select -->
+                    <div class="form-group" id="classic-position-group">
                         <label for="position">Position</label>
                         <select id="position" class="select-input">
                             <option value="">Choose position...</option>
                         </select>
+                    </div>
+
+                    <!-- Eval mode: multi-select positions -->
+                    <div class="form-group" id="eval-position-group" style="display:none">
+                        <label>Positions</label>
+                        <div class="eval-toggle-group" id="eval-positions-buttons"></div>
                     </div>
 
                     <div class="form-group" id="action-form-group">
@@ -62,11 +69,18 @@
                         </select>
                     </div>
 
-                    <div class="form-group">
+                    <!-- Classic mode: single stack depth select -->
+                    <div class="form-group" id="classic-depth-group">
                         <label for="stack-depth">Stack Depth</label>
                         <select id="stack-depth" class="select-input" disabled>
                             <option value="">Choose stack depth...</option>
                         </select>
+                    </div>
+
+                    <!-- Eval mode: multi-select stack depths -->
+                    <div class="form-group" id="eval-depth-group" style="display:none">
+                        <label>Stack Depths</label>
+                        <div class="eval-toggle-group" id="eval-depths-buttons"></div>
                     </div>
 
                     <button id="start-btn" class="btn btn-primary" disabled>Start Practice</button>
