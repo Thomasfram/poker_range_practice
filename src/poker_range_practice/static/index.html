@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poker Range Practice</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -109,7 +110,14 @@
                         <span id="eval-progress-label">0 / 20</span>
                     </div>
 
-                    <div class="scenario-label hidden" id="scenario-label"></div>
+                    <!-- Eval mode: prominent position + stack context -->
+                    <div class="eval-context hidden" id="eval-context">
+                        <div class="eval-ctx-row">
+                            <span class="eval-ctx-pos" id="eval-ctx-pos"></span>
+                            <span class="eval-ctx-stack" id="eval-ctx-stack"></span>
+                        </div>
+                        <div class="eval-ctx-desc" id="eval-ctx-desc"></div>
+                    </div>
 
                     <div class="hand-display">
                         <div class="hand-label">Your Hand:</div>
@@ -252,6 +260,14 @@
                         <div class="eval-progress-bar" id="flop-eval-progress-bar"></div>
                     </div>
                     <span id="flop-eval-progress-label">0 / 20</span>
+                </div>
+
+                <!-- Eval mode: prominent situation + stack context -->
+                <div class="eval-context hidden" id="flop-eval-context">
+                    <div class="eval-ctx-row">
+                        <span class="eval-ctx-pos" id="flop-ctx-sit"></span>
+                        <span class="eval-ctx-stack" id="flop-ctx-stack"></span>
+                    </div>
                 </div>
 
                 <!-- ── Poker Table ── -->
