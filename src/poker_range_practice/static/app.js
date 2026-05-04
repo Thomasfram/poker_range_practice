@@ -17,6 +17,9 @@ let currentConfig = {
 let evalSelectedPositions = new Set();
 let evalSelectedDepths = new Set();
 let evalAllDepths = [];  // union of depths for selected positions
+let evalHandCount = 20;
+let evalHandsDone = 0;
+let evalResults = {};  // key -> { correct, total, label, position, action, stackDepth }
 
 let currentHand = null;
 let currentScenario = { action: null, label: null, position: null, stackDepth: null };
@@ -51,8 +54,19 @@ function setupEventListeners() {
     actionSelect.addEventListener('change', onActionChange);
     stackDepthSelect.addEventListener('change', onStackDepthChange);
     startBtn.addEventListener('click', startPractice);
-    nextBtn.addEventListener('click', loadNextHand);
+    nextBtn.onclick = loadNextHand;
     backBtn.addEventListener('click', backToMenu);
+    document.getElementById('results-back-btn').addEventListener('click', backToMenu);
+    document.getElementById('results-retry-btn').addEventListener('click', retryEval);
+
+    // Eval hand count preset buttons
+    document.getElementById('eval-count-buttons').addEventListener('click', e => {
+        const btn = e.target.closest('.eval-toggle-btn');
+        if (!btn) return;
+        document.querySelectorAll('#eval-count-buttons .eval-toggle-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        evalHandCount = parseInt(btn.dataset.value, 10);
+    });
 }
 
 function setMode(mode) {
@@ -68,6 +82,7 @@ function setMode(mode) {
     // Eval-only controls
     document.getElementById('eval-position-group').style.display = evalMode ? '' : 'none';
     document.getElementById('eval-depth-group').style.display    = evalMode ? '' : 'none';
+    document.getElementById('eval-count-group').style.display    = evalMode ? '' : 'none';
 
     // Reset classic selects
     positionSelect.value = '';
@@ -81,6 +96,8 @@ function setMode(mode) {
     evalSelectedPositions.clear();
     evalSelectedDepths.clear();
     evalAllDepths = [];
+    evalHandsDone = 0;
+    evalResults = {};
     document.getElementById('eval-depths-buttons').innerHTML = '';
 
     if (evalMode) loadEvalPositions();
@@ -246,7 +263,9 @@ async function startPractice() {
             const posLabel   = positions.join(', ');
             const depthLabel = stack_depths.join(', ');
             configDisplay.textContent =
-                `${posLabel} — Évaluation — ${depthLabel} (${data.scenario_count} scénarios)`;
+                `${posLabel} — Évaluation — ${depthLabel}`;
+            evalHandsDone = 0;
+            evalResults = {};
         } else {
             const res = await fetch('/api/start', {
                 method: 'POST',
@@ -267,6 +286,12 @@ async function startPractice() {
         if (data.success) {
             configScreen.classList.remove('active');
             practiceScreen.classList.add('active');
+            if (evalMode) {
+                document.getElementById('eval-progress').classList.remove('hidden');
+                updateEvalProgress();
+            } else {
+                document.getElementById('eval-progress').classList.add('hidden');
+            }
             loadNextHand();
         }
     } catch (e) {
@@ -397,6 +422,34 @@ async function submitAnswer(action) {
         if (data.correct) stats.correct++;
         updateStats();
         showFeedback(data);
+
+        if (evalMode) {
+            // Track per-range results
+            const key = `${currentScenario.position}/${currentScenario.action}@${currentScenario.stackDepth}`;
+            if (!evalResults[key]) {
+                evalResults[key] = {
+                    correct: 0, total: 0,
+                    label:      currentScenario.label,
+                    position:   currentScenario.position,
+                    action:     currentScenario.action,
+                    stackDepth: currentScenario.stackDepth,
+                };
+            }
+            evalResults[key].total++;
+            if (data.correct) evalResults[key].correct++;
+
+            evalHandsDone++;
+            updateEvalProgress();
+
+            if (evalHandsDone >= evalHandCount) {
+                nextBtn.textContent = 'Voir les résultats →';
+                nextBtn.onclick = showEvalResults;
+            } else {
+                nextBtn.textContent = 'Main suivante →';
+                nextBtn.onclick = loadNextHand;
+            }
+        }
+
         nextBtn.style.display = 'block';
     } catch (e) {
         console.error('Error checking answer:', e);
@@ -453,9 +506,86 @@ function updateStats() {
     document.getElementById('accuracy').textContent = accuracy + '%';
 }
 
+function updateEvalProgress() {
+    const pct = Math.round((evalHandsDone / evalHandCount) * 100);
+    document.getElementById('eval-progress-bar').style.width = `${pct}%`;
+    document.getElementById('eval-progress-label').textContent = `${evalHandsDone} / ${evalHandCount}`;
+}
+
+function showEvalResults() {
+    practiceScreen.classList.remove('active');
+    document.getElementById('results-screen').classList.add('active');
+    renderResults();
+}
+
+function renderResults() {
+    const overall = document.getElementById('results-overall');
+    const tableWrap = document.getElementById('results-table');
+
+    const totalCorrect = Object.values(evalResults).reduce((s, r) => s + r.correct, 0);
+    const totalTotal   = Object.values(evalResults).reduce((s, r) => s + r.total, 0);
+    const globalPct    = totalTotal > 0 ? Math.round((totalCorrect / totalTotal) * 100) : 0;
+
+    const globalColor = globalPct >= 75 ? '#28a745' : globalPct >= 50 ? '#f0ad4e' : '#dc3545';
+    overall.innerHTML = `
+        <div class="results-score" style="color:${globalColor}">
+            ${totalCorrect} / ${totalTotal}
+            <span class="results-pct">${globalPct}%</span>
+        </div>
+    `;
+
+    // Sort ranges: worst accuracy first
+    const rows = Object.values(evalResults).sort((a, b) => {
+        const pa = a.correct / a.total;
+        const pb = b.correct / b.total;
+        return pa - pb;
+    });
+
+    let html = `
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Range</th>
+                    <th>Position</th>
+                    <th>Stack</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    rows.forEach(r => {
+        const pct = Math.round((r.correct / r.total) * 100);
+        const color = pct >= 75 ? '#28a745' : pct >= 50 ? '#f0ad4e' : '#dc3545';
+        const icon  = pct >= 75 ? '✓' : pct >= 50 ? '~' : '✗';
+        html += `
+            <tr>
+                <td class="results-label">${r.label}</td>
+                <td class="results-pos">${r.position}</td>
+                <td class="results-depth">${r.stackDepth}</td>
+                <td class="results-score-cell" style="color:${color}">
+                    <span class="results-icon">${icon}</span>
+                    ${r.correct}/${r.total} <span class="results-pct-sm">${pct}%</span>
+                </td>
+            </tr>
+        `;
+    });
+    html += '</tbody></table>';
+    tableWrap.innerHTML = html;
+}
+
+function retryEval() {
+    document.getElementById('results-screen').classList.remove('active');
+    evalHandsDone = 0;
+    evalResults = {};
+    startPractice();
+}
+
 function backToMenu() {
     practiceScreen.classList.remove('active');
+    document.getElementById('results-screen').classList.remove('active');
     configScreen.classList.add('active');
     feedbackDiv.classList.add('hidden');
     nextBtn.style.display = 'none';
+    nextBtn.textContent = 'Next Hand →';
+    nextBtn.onclick = loadNextHand;
 }

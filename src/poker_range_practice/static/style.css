@@ -1168,6 +1168,135 @@ label {
     color: #fff;
 }
 
+/* ── Eval progress bar ─────────────────────────────────────────────────────── */
+.eval-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0 14px;
+}
+
+.eval-progress.hidden {
+    display: none;
+}
+
+.eval-progress-bar-wrap {
+    flex: 1;
+    height: 8px;
+    background: #e0e7ef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.eval-progress-bar {
+    height: 100%;
+    background: #1e3c72;
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+#eval-progress-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #1e3c72;
+    white-space: nowrap;
+}
+
+/* ── Eval results screen ───────────────────────────────────────────────────── */
+.results-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+.results-card h2 {
+    margin: 0 0 20px;
+    color: #1e3c72;
+    font-size: 1.3rem;
+}
+
+.results-overall {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.results-score {
+    font-size: 2.8rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.results-pct {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-left: 10px;
+}
+
+.results-table-wrap {
+    overflow-x: auto;
+    margin-bottom: 24px;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.results-table th {
+    background: #f0f4fa;
+    color: #1e3c72;
+    text-align: left;
+    padding: 8px 10px;
+    font-weight: 700;
+    border-bottom: 2px solid #d0daea;
+}
+
+.results-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e8eef8;
+    vertical-align: middle;
+}
+
+.results-table tr:last-child td {
+    border-bottom: none;
+}
+
+.results-label {
+    font-weight: 500;
+    color: #222;
+}
+
+.results-pos, .results-depth {
+    color: #555;
+    white-space: nowrap;
+}
+
+.results-score-cell {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.results-icon {
+    margin-right: 4px;
+}
+
+.results-pct-sm {
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 0.85;
+}
+
+.results-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
 .scenario-label {
     background: #e8f0fe;
     border-left: 4px solid #1e3c72;

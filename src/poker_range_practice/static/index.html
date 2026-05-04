@@ -83,6 +83,17 @@
                         <div class="eval-toggle-group" id="eval-depths-buttons"></div>
                     </div>
 
+                    <!-- Eval mode: hand count selector -->
+                    <div class="form-group" id="eval-count-group" style="display:none">
+                        <label>Nombre de mains</label>
+                        <div class="eval-toggle-group" id="eval-count-buttons">
+                            <button class="eval-toggle-btn" data-value="10">10</button>
+                            <button class="eval-toggle-btn selected" data-value="20">20</button>
+                            <button class="eval-toggle-btn" data-value="50">50</button>
+                            <button class="eval-toggle-btn" data-value="100">100</button>
+                        </div>
+                    </div>
+
                     <button id="start-btn" class="btn btn-primary" disabled>Start Practice</button>
                 </div>
             </div>
@@ -91,6 +102,12 @@
             <div id="practice-screen" class="screen">
                 <div class="practice-card">
                     <div class="config-display" id="config-display"></div>
+                    <div class="eval-progress hidden" id="eval-progress">
+                        <div class="eval-progress-bar-wrap">
+                            <div class="eval-progress-bar" id="eval-progress-bar"></div>
+                        </div>
+                        <span id="eval-progress-label">0 / 20</span>
+                    </div>
 
                     <div class="scenario-label hidden" id="scenario-label"></div>
 
@@ -111,6 +128,19 @@
 
                     <div class="actions">
                         <button class="btn btn-secondary" id="back-btn">← Back to Menu</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Eval Results Screen -->
+            <div id="results-screen" class="screen">
+                <div class="results-card">
+                    <h2>Résultats de l'évaluation</h2>
+                    <div class="results-overall" id="results-overall"></div>
+                    <div class="results-table-wrap" id="results-table"></div>
+                    <div class="results-actions">
+                        <button class="btn btn-secondary" id="results-back-btn">← Retour au menu</button>
+                        <button class="btn btn-primary" id="results-retry-btn">Rejouer ↺</button>
                     </div>
                 </div>
             </div>
