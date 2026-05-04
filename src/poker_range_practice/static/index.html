@@ -86,13 +86,8 @@
 
                     <!-- Eval mode: hand count selector -->
                     <div class="form-group" id="eval-count-group" style="display:none">
-                        <label>Nombre de mains</label>
-                        <div class="eval-toggle-group" id="eval-count-buttons">
-                            <button class="eval-toggle-btn" data-value="10">10</button>
-                            <button class="eval-toggle-btn selected" data-value="20">20</button>
-                            <button class="eval-toggle-btn" data-value="50">50</button>
-                            <button class="eval-toggle-btn" data-value="100">100</button>
-                        </div>
+                        <label for="eval-count-input">Nombre de mains</label>
+                        <input type="number" id="eval-count-input" class="count-input" value="20" min="1" max="9999">
                     </div>
 
                     <button id="start-btn" class="btn btn-primary" disabled>Start Practice</button>
@@ -214,13 +209,8 @@
                             <div class="eval-toggle-group" id="flop-eval-depths"></div>
                         </div>
                         <div class="form-group">
-                            <label>Nombre de mains</label>
-                            <div class="eval-toggle-group" id="flop-eval-count-buttons">
-                                <button class="eval-toggle-btn" data-value="10">10</button>
-                                <button class="eval-toggle-btn selected" data-value="20">20</button>
-                                <button class="eval-toggle-btn" data-value="50">50</button>
-                                <button class="eval-toggle-btn" data-value="100">100</button>
-                            </div>
+                            <label for="flop-eval-count-input">Nombre de mains</label>
+                            <input type="number" id="flop-eval-count-input" class="count-input" value="20" min="1" max="9999">
                         </div>
                     </div>
 

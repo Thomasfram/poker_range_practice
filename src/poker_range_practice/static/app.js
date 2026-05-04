@@ -62,13 +62,9 @@ function setupEventListeners() {
     document.getElementById('results-back-btn').addEventListener('click', backToMenu);
     document.getElementById('results-retry-btn').addEventListener('click', retryEval);
 
-    // Eval hand count preset buttons
-    document.getElementById('eval-count-buttons').addEventListener('click', e => {
-        const btn = e.target.closest('.eval-toggle-btn');
-        if (!btn) return;
-        document.querySelectorAll('#eval-count-buttons .eval-toggle-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        evalHandCount = parseInt(btn.dataset.value, 10);
+    document.getElementById('eval-count-input').addEventListener('input', e => {
+        const v = parseInt(e.target.value, 10);
+        if (v > 0) evalHandCount = v;
     });
 }
 

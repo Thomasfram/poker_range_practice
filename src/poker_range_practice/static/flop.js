@@ -216,13 +216,9 @@ function initFlopEvalConfig() {
         depthContainer.appendChild(btn);
     });
 
-    // Hand count preset buttons
-    document.getElementById('flop-eval-count-buttons').addEventListener('click', e => {
-        const btn = e.target.closest('.eval-toggle-btn');
-        if (!btn) return;
-        document.querySelectorAll('#flop-eval-count-buttons .eval-toggle-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        flopEval.handCount = parseInt(btn.dataset.value, 10);
+    document.getElementById('flop-eval-count-input').addEventListener('input', e => {
+        const v = parseInt(e.target.value, 10);
+        if (v > 0) flopEval.handCount = v;
     });
 }
 

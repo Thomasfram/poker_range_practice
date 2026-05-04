@@ -138,7 +138,9 @@ def get_bb_defense_recommendation(
         # XR bluff: OESD, any flush draw
         elif has_oesd or has_flush_draw:
             action = 'raise'
-        # Call: top pair, flush, A-high+BDFD, 2 overcards+BDFD, middle pair
+        # Call: overpair, top pair, flush, A-high+BDFD, 2 overcards+BDFD, middle pair
+        elif is_pocket_pair and hv[0] > bv[0]:
+            action = 'call'
         elif has_top_pair or is_flush:
             action = 'call'
         elif 14 in hv and 14 not in b_set and has_bd_flush:
