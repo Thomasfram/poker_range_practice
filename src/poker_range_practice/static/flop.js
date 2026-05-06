@@ -21,6 +21,7 @@ const FLOP_EVAL_SITUATIONS = [
     { key: 'CO/BB',  label: 'CO vs BB',  hero: 'CO',  villain: 'BB', type: 'cbet' },
     { key: 'BB/BTN', label: 'BB vs BTN', hero: 'BB',  villain: 'BTN', type: 'defense' },
     { key: 'BB/CO',  label: 'BB vs CO',  hero: 'BB',  villain: 'CO',  type: 'defense' },
+    { key: 'SB/BB',  label: 'BvB: SB Raise vs BB', hero: 'SB', villain: 'BB', type: 'cbet' },
 ];
 
 // State
@@ -764,7 +765,7 @@ async function submitCbet(action, sizing) {
         user_sizing: sizing,
     };
 
-    const supported = { BTN: ['BB', 'SB'], CO: ['BB'] };
+    const supported = { BTN: ['BB', 'SB'], CO: ['BB'], SB: ['BB'] };
     if (!supported[hero] || !supported[hero].includes(villain)) {
         document.getElementById('flop-feedback').className = 'feedback correct';
         document.getElementById('flop-feedback').innerHTML = `

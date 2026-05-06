@@ -252,7 +252,7 @@ def create_app() -> FastAPI:
             if body.villain == "BB":
                 action = "vs BB"
         elif body.hero == "SB":
-            action = "open_limp"
+            action = "open"
 
         current_range = _range_manager.get_range(body.hero, action, stack_depth)
 
@@ -271,6 +271,7 @@ def create_app() -> FastAPI:
         supported = {
             "BTN": ("BB", "SB"),
             "CO":  ("BB",),
+            "SB":  ("BB",),
         }
         if body.hero_position not in supported:
             raise HTTPException(status_code=400, detail=f"Position héro non supportée : {body.hero_position}")
