@@ -57,6 +57,7 @@ class FlopHeroHandRequest(BaseModel):
     hero: str
     villain: str
     stackDepth: int
+    scenario: Optional[str] = None
 
 
 class CardData(BaseModel):
@@ -72,6 +73,7 @@ class CheckCbetRequest(BaseModel):
     stack_depth: int
     user_action: str          # "bet" | "check"
     user_sizing: Optional[int] = None
+    scenario: Optional[str] = None
 
 
 class BoardInfoRequest(BaseModel):
@@ -252,7 +254,7 @@ def create_app() -> FastAPI:
             if body.villain == "BB":
                 action = "vs BB"
         elif body.hero == "SB":
-            action = "open"
+            action = "open_limp" if body.scenario == "limp" else "open"
 
         current_range = _range_manager.get_range(body.hero, action, stack_depth)
 
@@ -285,7 +287,8 @@ def create_app() -> FastAPI:
         board = [FlopCard(c.rank, c.suit) for c in body.board_cards]
 
         rec = get_cbet_recommendation(
-            hole, board, body.hero_position, body.villain_position, body.stack_depth
+            hole, board, body.hero_position, body.villain_position, body.stack_depth,
+            scenario=body.scenario,
         )
 
         user_bets = body.user_action == "bet"

@@ -21,7 +21,8 @@ const FLOP_EVAL_SITUATIONS = [
     { key: 'CO/BB',  label: 'CO vs BB',  hero: 'CO',  villain: 'BB', type: 'cbet' },
     { key: 'BB/BTN', label: 'BB vs BTN', hero: 'BB',  villain: 'BTN', type: 'defense' },
     { key: 'BB/CO',  label: 'BB vs CO',  hero: 'BB',  villain: 'CO',  type: 'defense' },
-    { key: 'SB/BB',  label: 'BvB: SB Raise vs BB', hero: 'SB', villain: 'BB', type: 'cbet' },
+    { key: 'SB/BB',      label: 'BvB: SB Raise vs BB', hero: 'SB', villain: 'BB', type: 'cbet', scenario: 'raise' },
+    { key: 'SB/BB_limp', label: 'BvB: SB Limp vs BB',  hero: 'SB', villain: 'BB', type: 'cbet', scenario: 'limp'  },
 ];
 
 // State
@@ -29,6 +30,7 @@ const flopState = {
     hero: null,
     villain: null,
     stackDepth: null,
+    scenario: null,   // 'raise' | 'limp' | null (only relevant for SB vs BB)
 };
 
 const flopPractice = {
@@ -79,6 +81,40 @@ function initFlopConfig() {
     renderPositionButtons('hero-position-buttons', 'hero');
     renderPositionButtons('villain-position-buttons', 'villain');
     renderStackDepthButtons();
+    renderBvBScenarioButtons();
+}
+
+function renderBvBScenarioButtons() {
+    const container = document.getElementById('bvb-scenario-buttons');
+    if (!container) return;
+    container.innerHTML = '';
+    [{ key: 'raise', label: 'SB Raise' }, { key: 'limp', label: 'SB Limp' }].forEach(({ key, label }) => {
+        const btn = document.createElement('button');
+        btn.className = 'position-btn';
+        btn.textContent = label;
+        btn.dataset.scenario = key;
+        btn.addEventListener('click', () => selectBvBScenario(key));
+        container.appendChild(btn);
+    });
+}
+
+function selectBvBScenario(scenario) {
+    flopState.scenario = scenario;
+    document.querySelectorAll('#bvb-scenario-buttons .position-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.scenario === scenario);
+    });
+    updateFlopSummary();
+    updateFlopStartBtn();
+}
+
+function updateBvBScenarioVisibility() {
+    const isBvB = flopState.hero === 'SB' && flopState.villain === 'BB';
+    const group = document.getElementById('bvb-scenario-group');
+    if (group) group.style.display = isBvB ? '' : 'none';
+    if (!isBvB) {
+        flopState.scenario = null;
+        document.querySelectorAll('#bvb-scenario-buttons .position-btn').forEach(b => b.classList.remove('selected'));
+    }
 }
 
 function renderPositionButtons(containerId, role) {
@@ -116,6 +152,7 @@ function selectPosition(role, position) {
         btn.classList.toggle('selected', btn.dataset.position === position);
     });
     validatePositionConflict();
+    updateBvBScenarioVisibility();
     updateFlopSummary();
     updateFlopStartBtn();
 }
@@ -157,6 +194,8 @@ function updateFlopSummary() {
     if (hero) parts.push(`<span class="summary-chip hero-chip">Hero: <strong>${hero}</strong></span>`);
     if (villain) parts.push(`<span class="summary-chip villain-chip">Villain: <strong>${villain}</strong></span>`);
     if (stackDepth) parts.push(`<span class="summary-chip stack-chip">Stack: <strong>${stackDepth.label}</strong></span>`);
+    const isBvB = hero === 'SB' && villain === 'BB';
+    if (isBvB && flopState.scenario) parts.push(`<span class="summary-chip stack-chip">Scénario: <strong>${flopState.scenario === 'limp' ? 'SB Limp' : 'SB Raise'}</strong></span>`);
     el.innerHTML = parts.length ? parts.join(' vs ') : 'Complete the configuration above to start.';
 }
 
@@ -166,8 +205,9 @@ function updateFlopStartBtn() {
     if (flopEval.active) {
         btn.disabled = flopEval.situations.size === 0 || flopEval.depths.size === 0;
     } else {
-        const { hero, villain, stackDepth } = flopState;
-        btn.disabled = !hero || !villain || !stackDepth || hero === villain;
+        const { hero, villain, stackDepth, scenario } = flopState;
+        const needsScenario = hero === 'SB' && villain === 'BB';
+        btn.disabled = !hero || !villain || !stackDepth || hero === villain || (needsScenario && !scenario);
     }
 }
 
@@ -305,6 +345,7 @@ async function dealFlopEvalHand() {
     flopState.hero       = sit.hero;
     flopState.villain    = sit.villain;
     flopState.stackDepth = sd;
+    flopState.scenario   = sit.scenario || null;
 
     // Store current combo for result tracking
     flopEval._currentCombo = { key: sitKey, hero: sit.hero, villain: sit.villain, stackDepth: depthVal, label: sit.label, sdLabel: sd.label };
@@ -508,8 +549,9 @@ function flopResultsRetry() {
 function startFlopPractice(configScr, practiceScr) {
     const { hero, villain, stackDepth } = flopState;
 
+    const scenarioSuffix = flopState.scenario === 'limp' ? ' (Limp)' : flopState.scenario === 'raise' ? ' (Raise)' : '';
     document.getElementById('flop-config-display').textContent =
-        `${hero} vs ${villain} — ${stackDepth.label}`;
+        `${hero} vs ${villain}${scenarioSuffix} — ${stackDepth.label}`;
     document.getElementById('hero-pos-label').textContent = hero;
     document.getElementById('villain-pos-label').textContent = villain;
 
@@ -576,7 +618,7 @@ async function dealFlopHand() {
             const res = await fetch('/api/flop/hero-hand', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ hero, villain, stackDepth: stackDepth.value }),
+                body: JSON.stringify({ hero, villain, stackDepth: stackDepth.value, scenario: flopState.scenario }),
             });
             const data = await res.json();
 
@@ -763,6 +805,7 @@ async function submitCbet(action, sizing) {
         stack_depth: stackDepth.value,
         user_action: action,
         user_sizing: sizing,
+        scenario: flopState.scenario,
     };
 
     const supported = { BTN: ['BB', 'SB'], CO: ['BB'], SB: ['BB'] };
