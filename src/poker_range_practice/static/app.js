@@ -207,10 +207,10 @@ async function onPositionChange() {
 
     try {
         const actions = await fetch(`/api/actions/${position}`).then(r => r.json());
-        actions.forEach(action => {
+        actions.forEach(({ value, label }) => {
             const opt = document.createElement('option');
-            opt.value = action;
-            opt.textContent = action;
+            opt.value = value;
+            opt.textContent = label;
             actionSelect.appendChild(opt);
         });
         actionSelect.disabled = false;
@@ -276,8 +276,9 @@ async function startPractice() {
                 }),
             });
             data = await res.json();
+            const actionLabel = actionSelect.options[actionSelect.selectedIndex].textContent;
             configDisplay.textContent =
-                `${currentConfig.position} - ${currentConfig.action} - ${currentConfig.stackDepth} (${data.range_size} hands)`;
+                `${currentConfig.position} - ${actionLabel} - ${currentConfig.stackDepth} (${data.range_size} hands)`;
             currentConfig.availableActions = data.available_actions || ['in_range'];
             setupActionButtons();
         }

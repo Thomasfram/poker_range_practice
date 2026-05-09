@@ -8,6 +8,20 @@ from .poker_hands import parse_range_notation
 _POSITION_ORDER = ['LJ', 'HJ', 'CO', 'BTN', 'SB', 'BB']
 
 
+def _action_label(position: str, action: str) -> str:
+    """Human-readable label for an action key, e.g. 'vs Open (BTN)' or 'vs 3bet (BB)'."""
+    if not action.startswith('vs '):
+        return action.replace('_', ' ').capitalize()
+    opponent = action[3:]  # e.g. "BTN", "SB limp"
+    if 'limp' in opponent.lower():
+        pos_part = opponent.split()[0]
+        return f"vs Limp ({pos_part})"
+    parent = _parent_open_range(position, action)
+    if parent is not None:
+        return f"vs 3bet ({opponent})"
+    return f"vs Open ({opponent})"
+
+
 def _parent_open_range(position: str, action: str) -> tuple[str, str] | None:
     """Return (position, 'open') when this scenario requires hero to have already opened.
 
@@ -103,17 +117,20 @@ class RangeManager:
             parent = _parent_open_range(position, action)
             scenarios.append({
                 'action':            action,
-                'label':             labels.get(f'{position}/{action}', action),
+                'label':             labels.get(f'{position}/{action}', _action_label(position, action)),
                 'available_actions': self.get_available_range_actions(position, action, stack_depth),
                 'parent_open':       parent,  # (position, 'open') or None
             })
         return scenarios
     
     def get_available_actions(self, position):
-        """Get list of available actions for a position."""
+        """Get list of available actions for a position, with human-readable labels."""
         if position not in self.ranges:
             return []
-        return list(self.ranges[position].keys())
+        return [
+            {"value": action, "label": _action_label(position, action)}
+            for action in self.ranges[position].keys()
+        ]
     
     def get_available_stack_depths(self, position, action):
         """Get list of available stack depths for a position/action."""
