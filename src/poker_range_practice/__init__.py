@@ -223,19 +223,18 @@ def create_app() -> FastAPI:
             "user_action": body.action,
         }
 
-        if not is_correct and actual_action == "fold":
-            range_hands = set(current_range.keys())
-            closest = find_closest_hand_in_range(hand, range_hands)
-            if closest:
-                response["closest_hand"] = str(closest)
-
-        if is_correct and actual_action != "fold":
+        if actual_action != "fold":
             specific_range_hands = [
                 h for h, act in current_range.items() if act == actual_action
             ]
             bottom = find_bottom_of_range_category(hand, specific_range_hands)
             if bottom:
                 response["bottom_of_range"] = str(bottom)
+
+        if not is_correct and actual_action == "fold":
+            closest = find_closest_hand_in_range(hand, set(current_range.keys()))
+            if closest:
+                response["closest_hand"] = str(closest)
 
         return response
 
@@ -512,15 +511,15 @@ def create_app() -> FastAPI:
             "actual_action": actual_action,
             "user_action":  body.user_action,
         }
-        if not is_correct and actual_action == "fold":
-            closest = find_closest_hand_in_range(hand, set(current_range.keys()))
-            if closest:
-                response["closest_hand"] = str(closest)
-        if is_correct and actual_action != "fold":
+        if actual_action != "fold":
             specific = [h for h, act in current_range.items() if act == actual_action]
             bottom = find_bottom_of_range_category(hand, specific)
             if bottom:
                 response["bottom_of_range"] = str(bottom)
+        if not is_correct and actual_action == "fold":
+            closest = find_closest_hand_in_range(hand, set(current_range.keys()))
+            if closest:
+                response["closest_hand"] = str(closest)
         return response
 
     # Static files mounted last so API routes take precedence

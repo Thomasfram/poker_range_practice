@@ -492,8 +492,10 @@ function showFeedback(data) {
     } else {
         feedbackDiv.classList.add('incorrect');
         let html = '<div class="feedback-title">✗ INCORRECT</div>';
-        html += `<div class="feedback-detail">You picked: <strong>${data.user_action}</strong></div>`;
-        html += `<div class="feedback-detail">Actual: <strong>${data.actual_action}</strong></div>`;
+        html += `<div class="feedback-detail">You picked: <strong>${data.user_action}</strong> — Actual: <strong>${data.actual_action}</strong></div>`;
+        if (data.bottom_of_range) {
+            html += `<div class="feedback-detail">Bottom of ${data.actual_action} range: <strong>${data.bottom_of_range}</strong></div>`;
+        }
         if (data.closest_hand) {
             html += `<div class="feedback-detail">Closest hand in range: <strong>${data.closest_hand}</strong></div>`;
         }
