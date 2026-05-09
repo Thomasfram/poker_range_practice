@@ -406,19 +406,22 @@ function updateFlopEvalProgress() {
     document.getElementById('flop-eval-progress-label').textContent = `${flopEval.handsDone} / ${flopEval.handCount}`;
 }
 
-function trackFlopEvalResult(isCorrect, userAction, correctAction) {
+function trackFlopEvalResult(isCorrect, userAction, correctAction, errorDetail = null) {
     if (!flopEval.active || !flopEval._currentCombo) return;
     const { key, hero, villain, stackDepth, label, sdLabel } = flopEval._currentCombo;
     const rKey = `${key}@${stackDepth}`;
     if (!flopEval.results[rKey]) {
-        flopEval.results[rKey] = { correct: 0, total: 0, hero, villain, stackDepth, label, sdLabel, errors: {} };
+        flopEval.results[rKey] = { correct: 0, total: 0, hero, villain, stackDepth, label, sdLabel, errors: {}, errorDetails: [] };
     }
     flopEval.results[rKey].total++;
     if (isCorrect) {
         flopEval.results[rKey].correct++;
-    } else if (userAction && correctAction && userAction !== correctAction) {
-        const errKey = `${userAction}→${correctAction}`;
-        flopEval.results[rKey].errors[errKey] = (flopEval.results[rKey].errors[errKey] || 0) + 1;
+    } else {
+        if (userAction && correctAction && userAction !== correctAction) {
+            const errKey = `${userAction}→${correctAction}`;
+            flopEval.results[rKey].errors[errKey] = (flopEval.results[rKey].errors[errKey] || 0) + 1;
+        }
+        if (errorDetail) flopEval.results[rKey].errorDetails.push(errorDetail);
     }
 
     flopEval.handsDone++;
@@ -447,6 +450,42 @@ const ACTION_LABELS_FR = {
     bet:   'Bet',
     check: 'Check',
 };
+
+function renderErrorDetailRow(e) {
+    const redSuits = new Set(['♥', '♦']);
+    const mc = c => {
+        const isRed = redSuits.has(c.suit);
+        const r = c.rank === 'T' ? '10' : c.rank;
+        return `<span class="ed-card${isRed ? ' red' : ''}">${r}${c.suit}</span>`;
+    };
+
+    const handHtml  = e.heroHand.map(mc).join('');
+    const boardHtml = e.board.map(mc).join(' ');
+
+    let userStr, correctStr;
+    if (e.type === 'cbet') {
+        userStr    = e.userAction === 'bet' && e.userSizing ? `Bet ${e.userSizing}%` : (e.userAction === 'bet' ? 'Bet' : 'Check');
+        correctStr = e.correctAction === 'bet' ? `Bet ${e.correctSizing}%` : 'Check';
+    } else {
+        const lbl  = { fold: 'Fold', call: 'Call', raise: 'XR' };
+        userStr    = e.userSizing    ? `${lbl[e.userAction]    || e.userAction}    ${e.userSizing}x`    : (lbl[e.userAction]    || e.userAction);
+        correctStr = e.correctSizing ? `${lbl[e.correctAction] || e.correctAction} ${e.correctSizing}x` : (lbl[e.correctAction] || e.correctAction);
+    }
+
+    return `
+        <div class="error-detail-row">
+            <div class="ed-hand">${handHtml}</div>
+            <div class="ed-board">${boardHtml}</div>
+            <span class="ed-texture">${e.texture_label}</span>
+            <span class="ed-strength">${e.hand_label}</span>
+            <div class="ed-verdict">
+                <span class="ed-wrong">${userStr}</span>
+                <span class="ed-arrow">→</span>
+                <span class="ed-right">${correctStr}</span>
+            </div>
+        </div>
+    `;
+}
 
 function renderFlopResults() {
     const overall   = document.getElementById('flop-results-overall');
@@ -532,6 +571,10 @@ function renderFlopResults() {
             }).join('')
             : '';
 
+        const detailsHtml = (r.errorDetails || []).length > 0
+            ? `<div class="error-detail-list">${r.errorDetails.map(renderErrorDetailRow).join('')}</div>`
+            : '';
+
         html += `
             <div class="result-card-item">
                 <div class="result-card-top">
@@ -545,6 +588,7 @@ function renderFlopResults() {
                     </div>
                 </div>
                 ${errHtml ? `<div class="result-sit-errors">${errHtml}</div>` : ''}
+                ${detailsHtml}
             </div>
         `;
     });
@@ -933,7 +977,17 @@ function showCbetFeedback(data, userAction, userSizing) {
     updateFlopStats();
 
     if (flopEval.active) {
-        trackFlopEvalResult(isCorrect, userAction, data.correct_action);
+        const errorDetail = !isCorrect ? {
+            heroHand: flopPractice.heroHand.map(c => ({...c})),
+            board: flopPractice.communityCards.map(c => ({...c})),
+            texture_label: data.texture_label,
+            hand_label: data.hand_label,
+            userAction, userSizing,
+            correctAction: data.correct_action,
+            correctSizing: data.correct_sizing,
+            type: 'cbet',
+        } : null;
+        trackFlopEvalResult(isCorrect, userAction, data.correct_action, errorDetail);
     } else if (nextBtn) {
         nextBtn.textContent = 'Next Hand →';
         nextBtn.onclick = dealFlopHand;
@@ -1118,7 +1172,18 @@ function showBBDefenseFeedback(data, userAction, userSizing) {
     updateFlopStats();
 
     if (flopEval.active) {
-        trackFlopEvalResult(isCorrect, userAction, data.correct_action);
+        const errorDetail = !isCorrect ? {
+            heroHand: flopPractice.heroHand.map(c => ({...c})),
+            board: flopPractice.communityCards.map(c => ({...c})),
+            texture_label: data.texture_label,
+            hand_label: data.hand_label,
+            userAction, userSizing,
+            correctAction: data.correct_action,
+            correctSizing: data.correct_sizing,
+            villain_sizing: data.villain_sizing,
+            type: 'defense',
+        } : null;
+        trackFlopEvalResult(isCorrect, userAction, data.correct_action, errorDetail);
     } else if (nextBtn) {
         nextBtn.textContent = 'Next Hand →';
         nextBtn.onclick = dealFlopHand;
