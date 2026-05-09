@@ -40,6 +40,8 @@ const flopPractice = {
     stats: { correct: 0, total: 0 },
 };
 
+let flopGuideMode = false;
+
 // Eval mode state
 const flopEval = {
     active: false,
@@ -202,6 +204,14 @@ function updateFlopSummary() {
 function updateFlopStartBtn() {
     const btn = document.getElementById('flop-start-btn');
     if (!btn) return;
+    if (flopGuideMode) {
+        btn.textContent = 'Voir le Guide →';
+        const { hero, villain, stackDepth, scenario } = flopState;
+        const needsScenario = hero === 'SB' && villain === 'BB';
+        btn.disabled = !hero || !villain || !stackDepth || hero === villain || (needsScenario && !scenario);
+        return;
+    }
+    btn.textContent = 'Start Flop Practice';
     if (flopEval.active) {
         btn.disabled = flopEval.situations.size === 0 || flopEval.depths.size === 0;
     } else {
@@ -216,6 +226,7 @@ function updateFlopStartBtn() {
 function initFlopEvalConfig() {
     document.getElementById('flop-mode-classic').addEventListener('click', () => setFlopMode(false));
     document.getElementById('flop-mode-eval').addEventListener('click',   () => setFlopMode(true));
+    document.getElementById('flop-mode-guide').addEventListener('click',  () => setFlopGuideMode());
 
     // Situation toggle buttons
     const sitContainer = document.getElementById('flop-eval-situations');
@@ -265,8 +276,10 @@ function initFlopEvalConfig() {
 
 function setFlopMode(evalMode) {
     flopEval.active = evalMode;
+    flopGuideMode = false;
     document.getElementById('flop-mode-classic').classList.toggle('active', !evalMode);
     document.getElementById('flop-mode-eval').classList.toggle('active', evalMode);
+    document.getElementById('flop-mode-guide').classList.remove('active');
     document.getElementById('flop-classic-config').style.display = evalMode ? 'none' : '';
     document.getElementById('flop-eval-config').style.display    = evalMode ? '' : 'none';
 
@@ -277,6 +290,17 @@ function setFlopMode(evalMode) {
     flopEval.results = {};
     document.querySelectorAll('#flop-eval-situations .eval-toggle-btn, #flop-eval-depths .eval-toggle-btn').forEach(b => b.classList.remove('selected'));
 
+    updateFlopStartBtn();
+}
+
+function setFlopGuideMode() {
+    flopEval.active = false;
+    flopGuideMode = true;
+    document.getElementById('flop-mode-classic').classList.remove('active');
+    document.getElementById('flop-mode-eval').classList.remove('active');
+    document.getElementById('flop-mode-guide').classList.add('active');
+    document.getElementById('flop-classic-config').style.display = '';
+    document.getElementById('flop-eval-config').style.display = 'none';
     updateFlopStartBtn();
 }
 
@@ -291,7 +315,9 @@ function initFlopNavigation() {
     if (startBtn) {
         startBtn.addEventListener('click', () => {
             if (startBtn.disabled) return;
-            if (flopEval.active) {
+            if (flopGuideMode) {
+                showFlopGuide(configScr);
+            } else if (flopEval.active) {
                 startFlopEvalSession(configScr, practiceScr);
             } else {
                 startFlopPractice(configScr, practiceScr);
@@ -303,6 +329,14 @@ function initFlopNavigation() {
             practiceScr.classList.remove('active');
             configScr.classList.add('active');
             document.getElementById('flop-eval-progress').classList.add('hidden');
+        });
+    }
+
+    const guideBk = document.getElementById('guide-back-btn');
+    if (guideBk) {
+        guideBk.addEventListener('click', () => {
+            document.getElementById('flop-guide-screen').classList.remove('active');
+            configScr.classList.add('active');
         });
     }
 
@@ -1101,4 +1135,368 @@ function updateFlopStats() {
     if (cEl) cEl.textContent = correct;
     if (tEl) tEl.textContent = total;
     if (aEl) aEl.textContent = acc + '%';
+}
+
+// ─── Guide Mode ───────────────────────────────
+
+const FLOP_GUIDE_DATA = {};
+
+// BTN / CO vs BB  (c-bet avec position)
+FLOP_GUIDE_DATA['BTN/BB'] = {
+    type: 'cbet',
+    note: 'Vous avez la position. BB check le flop à vous.',
+    cats: [
+        {
+            label: 'Très Dry', color: 'green',
+            examples: 'K72r · A62r · K82r',
+            criteria: 'Carte haute + cartes basses espacées, pas de FD',
+            freq: 'Range entier', size: 25, sizeDeep: 33,
+            bet: ['Toutes les mains'], check: [],
+        },
+        {
+            label: 'Intermédiaire', color: 'yellow',
+            examples: 'K87s · Q74r · T96r',
+            criteria: 'Board haut avec flush draw, ou connectivité moyenne',
+            freq: '3/4 des mains', size: 33, sizeDeep: 50,
+            bet: ['Monster', 'Strong', 'Medium', 'Draw Fort', 'Backdoor'],
+            check: ['Weak', 'Draw Moyen', 'Air'],
+        },
+        {
+            label: 'Drawy', color: 'red',
+            examples: '876s · T98s · 765r · monocolor bas',
+            criteria: 'Board bas (≤7 high), connecté ou monotone',
+            freq: '1/2 des mains', size: 50, sizeDeep: 66,
+            bet: ['Monster', 'Strong', 'Medium', 'Draw Fort', 'Backdoor'],
+            check: ['Weak', 'Draw Moyen', 'Air'],
+        },
+    ],
+};
+FLOP_GUIDE_DATA['CO/BB'] = FLOP_GUIDE_DATA['BTN/BB'];
+
+// BTN vs SB  (c-bet avec position)
+FLOP_GUIDE_DATA['BTN/SB'] = {
+    type: 'cbet',
+    note: 'Vous avez la position sur le SB défendeur.',
+    cats: [
+        {
+            label: 'Pairé low/mid (2-9)', color: 'green',
+            examples: '882r · 773s · 996r',
+            criteria: 'Flop pairé, carte de la paire entre 2 et 9',
+            freq: 'Range entier', size: 33,
+            bet: ['Toutes les mains'], check: [],
+        },
+        {
+            label: '9 / 8 high', color: 'green',
+            examples: '983r · 872s · 975r',
+            criteria: 'Carte la plus haute = 9 ou 8, board non pairé',
+            freq: 'Range entier', size: 50,
+            bet: ['Toutes les mains'], check: [],
+        },
+        {
+            label: 'Low board (≤7 high)', color: 'green',
+            examples: '742r · 653s · 752r',
+            criteria: 'Carte la plus haute ≤ 7',
+            freq: 'Range entier', size: 50,
+            bet: ['Toutes les mains'], check: [],
+        },
+        {
+            label: 'Q/J/T high (1 broadway)', color: 'yellow',
+            examples: 'Q84r · J73s · T62r',
+            criteria: '1 seule carte broadway, board non pairé',
+            freq: '2/3 des mains', size: 50,
+            bet: ['Monster', 'Strong', 'Medium', 'Draw Fort', 'Backdoor'],
+            check: ['Weak', 'Draw Moyen', 'Air'],
+        },
+        {
+            label: 'Double Broadway', color: 'yellow',
+            examples: 'KQ7r · QJTs · AJ4r',
+            criteria: '2+ cartes broadway (≥T), hors A/K high sec',
+            freq: '2/3 des mains', size: 50,
+            bet: ['Monster', 'Strong', 'Medium', 'Draw Fort', 'Backdoor'],
+            check: ['Weak', 'Draw Moyen', 'Air'],
+        },
+        {
+            label: 'A/K high sec', color: 'yellow',
+            examples: 'A72r · K83r · A92r',
+            criteria: 'A ou K top card + cartes basses espacées (gap ≥5)',
+            freq: '2/3 des mains', size: 33,
+            bet: ['Monster', 'Strong', 'Medium', 'Draw Fort', 'Backdoor'],
+            check: ['Weak', 'Draw Moyen', 'Air'],
+        },
+        {
+            label: 'A/K high drawy', color: 'orange',
+            examples: 'A87s · K97r · A76r',
+            criteria: 'A ou K avec cartes connectées ou flush draw',
+            freq: '1/2 des mains', size: 50,
+            bet: ['Monster', 'Strong', 'Draw Fort'],
+            check: ['Medium', 'Weak', 'Backdoor', 'Draw Moyen', 'Air'],
+        },
+        {
+            label: 'Pairé haut (T+)', color: 'orange',
+            examples: 'TT7r · QQ3s · JJ5r',
+            criteria: 'Flop pairé, carte de la paire ≥ T',
+            freq: '30% des mains', size: 33,
+            bet: ['Monster'],
+            check: ['Strong', 'Medium', 'Weak', 'Draw Fort', 'Air'],
+        },
+        {
+            label: 'Monocolor', color: 'red',
+            examples: 'Q87♥ · K53♠ · 976♣',
+            criteria: 'Les 3 cartes de la même couleur',
+            freq: '<50% des mains', size: 33,
+            bet: ['Monster', 'Strong'],
+            check: ['Medium', 'Weak', 'Draw Moyen', 'Backdoor', 'Air'],
+        },
+    ],
+};
+
+// BB defense vs BTN / CO  (sans position)
+FLOP_GUIDE_DATA['BB/BTN'] = {
+    type: 'defense',
+    note: 'Villain a c-bet le flop. Vous défendez sans position.',
+    cats: [
+        {
+            label: 'Très Dry', color: 'green',
+            examples: 'K72r · A62r · K82r',
+            villainSize: 25,
+            raise: ['Monster', 'Overpaire > board', 'TP + bonne kicker (A/K)', 'Flush Draw', 'OESD', 'Gutshot', 'Paire basse (bluff)', 'Q/J high + BDFD + BDSFD'],
+            call:  ['Strong (TP)', 'Medium (MP)', 'Weak (BP)', 'A/K high + BDFD'],
+            fold:  ['Air pur sans backdoor'],
+        },
+        {
+            label: 'Intermédiaire', color: 'yellow',
+            examples: 'K87s · Q74r · T96r',
+            villainSize: 33,
+            raise: ['Monster', 'TP + AK suited (TPBK)', 'OESD', 'Flush Draw', 'Gutshot + BDFD', 'A-high + BDSFD + BDFD'],
+            call:  ['A-high non pairé', '2 overcards + BDFD', 'Strong', 'Medium', 'Weak'],
+            fold:  ['Air sans draw', 'Draw Moyen pur'],
+        },
+        {
+            label: 'Drawy', color: 'red',
+            examples: '876s · T98s · 765r',
+            villainSize: 50,
+            raise: ['Set / Trips', 'Quinte', 'OESD', 'Flush Draw'],
+            call:  ['Overpaire', 'Top Pair', 'Flush', 'A-high + BDFD', '2 overcards + BDFD', 'Mid Pair'],
+            fold:  ['Paire basse sans draws', 'Weak pur', 'Backdoor seul'],
+        },
+    ],
+};
+FLOP_GUIDE_DATA['BB/CO'] = FLOP_GUIDE_DATA['BB/BTN'];
+
+// SB vs BB raise — BvB hors position
+FLOP_GUIDE_DATA['SB/BB'] = {
+    type: 'cbet',
+    note: 'BvB — vous avez raise en SB, BB a suivi. Vous êtes HOP.',
+    cats: [
+        {
+            label: 'Avantage nuts (A/K high sec)', color: 'lime',
+            examples: 'A72r · K83r · A92r',
+            criteria: 'A ou K top card, cartes basses espacées',
+            freq: '3/4 des mains', size: 50,
+            bet: ['Monster', 'Strong', 'Medium', 'Draw Fort'],
+            check: ['Weak', 'Backdoor', 'Air'],
+        },
+        {
+            label: 'Single BW sec / Double BW', color: 'lime',
+            examples: 'Q84r · KQ7r · QJTs',
+            criteria: '1 broadway sec (Q/J/T) ou 2+ broadway',
+            freq: '70% des mains', size: 33,
+            bet: ['Monster', 'Strong', 'Medium', 'Draw Fort'],
+            check: ['Weak', 'Backdoor', 'Air'],
+        },
+        {
+            label: 'Single BW connecté / Low sec', color: 'yellow',
+            examples: 'Q87r · J98s · 942r',
+            criteria: 'Single broadway connecté, ou board bas déconnecté',
+            freq: '1/2 des mains', size: 50,
+            bet: ['Monster', 'Strong', 'Draw Fort'],
+            check: ['Medium', 'Weak', 'Backdoor', 'Air'],
+        },
+        {
+            label: 'Pairé', color: 'orange',
+            examples: 'T72r · K85p · 882s',
+            criteria: 'Flop pairé, toute hauteur',
+            freq: '3/4 std', freqDeep: '1/2 des mains',
+            size: 25,
+            bet: ['Monster', 'Strong', 'Medium', 'Draw Fort'],
+            betDeep: ['Monster', 'Strong'],
+            check: ['Weak', 'Backdoor', 'Air'],
+            checkDeep: ['Medium', 'Weak', 'Draw Fort', 'Backdoor', 'Air'],
+        },
+        {
+            label: 'Monocolor', color: 'red',
+            examples: 'Q87♥ · 976♠ · K43♣',
+            criteria: 'Les 3 cartes de la même couleur',
+            freq: '1/3 std', freqDeep: '1/2 des mains',
+            size: 25,
+            bet: ['Monster'],
+            betDeep: ['Monster', 'Strong'],
+            check: ['Strong', 'Medium', 'Weak', 'Draw Fort', 'Backdoor', 'Air'],
+            checkDeep: ['Medium', 'Weak', 'Draw Fort', 'Backdoor', 'Air'],
+        },
+        {
+            label: 'Bas connecté', color: 'red',
+            examples: '876r · 975s · 753r',
+            criteria: 'Toutes les cartes ≤9, gap total ≤4',
+            freq: '30% std', freqDeep: 'Check range entier',
+            size: 66, sizeDeep: null,
+            bet: ['Monster'],
+            betDeep: [],
+            check: ['Strong', 'Medium', 'Weak', 'Draw Fort', 'Backdoor', 'Air'],
+            checkDeep: ['Toutes les mains'],
+        },
+    ],
+};
+
+// SB vs BB limp — BvB hors position
+FLOP_GUIDE_DATA['SB/BB_limp'] = {
+    type: 'cbet',
+    note: 'BvB — vous avez limp en SB, BB a check. Vous êtes HOP.',
+    cats: [
+        {
+            label: 'Pairé low (2-6)', color: 'red',
+            examples: '662r · 332s · 554r',
+            criteria: 'Flop pairé, carte de la paire entre 2 et 6',
+            freq: 'Check range entier', size: null,
+            bet: [], check: ['Toutes les mains'],
+        },
+        {
+            label: 'Pairé mid (7-9)', color: 'orange',
+            examples: '772r · 885s · 993r',
+            criteria: 'Flop pairé, carte de la paire entre 7 et 9',
+            freq: '1/3 des mains', freqShallow: 'Check (20bb)',
+            size: 50, sizeShallow: null,
+            bet: ['Monster', 'Strong'],
+            betShallow: [],
+            check: ['Medium', 'Weak', 'Draw Fort', 'Backdoor', 'Air'],
+            checkShallow: ['Toutes les mains'],
+        },
+        {
+            label: 'Pairé haut (T+)', color: 'yellow',
+            examples: 'TT7r · QQ3s · JJ5r',
+            criteria: 'Flop pairé, carte de la paire ≥ T',
+            freq: '~40% std · ≥50% deep', size: 50,
+            bet: ['Monster', 'Strong', 'Medium'],
+            check: ['Weak', 'Draw Fort', 'Backdoor', 'Air'],
+        },
+        {
+            label: 'A-high / Double Broadway', color: 'yellow',
+            examples: 'A87s · AJ4r · KQ7r',
+            criteria: 'As en top card, ou 2+ broadway',
+            freq: '~40% std · 1/2 deep', size: 50,
+            bet: ['Monster', 'Strong', 'Medium', 'Draw Fort'],
+            check: ['Weak', 'Backdoor', 'Air'],
+        },
+        {
+            label: 'Connecté ou monocolor', color: 'red',
+            examples: '876s · 975r · Q87♥',
+            criteria: 'Board connecté (gap ≤4) ou monotone, sans broadway',
+            freq: '~25% des mains', size: 50,
+            bet: ['Monster'],
+            check: ['Strong', 'Medium', 'Weak', 'Draw Fort', 'Backdoor', 'Air'],
+        },
+        {
+            label: 'Déconnecté', color: 'lime',
+            examples: 'K72r · Q83s · J62r',
+            criteria: 'Board déconnecté non A-high et non 2+ broadway',
+            freq: '1/2 des mains', size: 50,
+            bet: ['Monster', 'Strong', 'Medium', 'Draw Fort', 'Showdown'],
+            check: ['Weak', 'Backdoor', 'Air'],
+        },
+    ],
+};
+
+function showFlopGuide(configScr) {
+    const { hero, villain, stackDepth, scenario } = flopState;
+    const depth = stackDepth.value;
+
+    let key;
+    if (hero === 'SB' && villain === 'BB') {
+        key = scenario === 'limp' ? 'SB/BB_limp' : 'SB/BB';
+    } else {
+        key = `${hero}/${villain}`;
+    }
+
+    const data = FLOP_GUIDE_DATA[key];
+    if (!data) return;
+
+    const typeLabel = data.type === 'defense' ? 'Défense' : 'C-Bet';
+    const sitLabel = (hero === 'SB' && villain === 'BB' && scenario)
+        ? `SB vs BB (${scenario === 'limp' ? 'SB Limp' : 'SB Raise'})`
+        : `${hero} vs ${villain}`;
+    document.getElementById('guide-title').textContent = `${typeLabel} · ${sitLabel} — ${stackDepth.label}`;
+    document.getElementById('guide-content').innerHTML = renderGuideContent(data, depth);
+
+    configScr.classList.remove('active');
+    document.getElementById('flop-guide-screen').classList.add('active');
+}
+
+function renderGuideContent(data, depth) {
+    const isDeep    = depth >= 70;
+    const isShallow = depth <= 30;
+
+    let html = `<p class="guide-note">${data.note}</p><div class="guide-cats">`;
+
+    for (const cat of data.cats) {
+        const freq = (isDeep && cat.freqDeep)    ? cat.freqDeep
+                   : (isShallow && cat.freqShallow) ? cat.freqShallow
+                   : cat.freq;
+
+        const size = (isDeep    && cat.sizeDeep    !== undefined) ? cat.sizeDeep
+                   : (isShallow && cat.sizeShallow  !== undefined) ? cat.sizeShallow
+                   : cat.size;
+
+        html += `<div class="guide-cat guide-cat--${cat.color}">`;
+        html += `<div class="guide-cat-header">`;
+        html += `<span class="guide-cat-label">${cat.label}</span>`;
+        html += `<div class="guide-cat-stats">`;
+        html += `<span class="guide-freq-badge">${freq}</span>`;
+        if (size) html += `<span class="guide-size-badge">${size}% pot</span>`;
+        if (data.type === 'defense') html += `<span class="guide-villain-size">Villain: ${cat.villainSize}%</span>`;
+        html += `</div></div>`;
+
+        html += `<p class="guide-cat-examples">${cat.examples}</p>`;
+        if (cat.criteria) html += `<p class="guide-cat-criteria">${cat.criteria}</p>`;
+
+        if (data.type === 'cbet') {
+            const bet   = (isDeep && cat.betDeep)     ? cat.betDeep
+                        : (isShallow && cat.betShallow) ? cat.betShallow
+                        : cat.bet;
+            const check = (isDeep && cat.checkDeep)     ? cat.checkDeep
+                        : (isShallow && cat.checkShallow) ? cat.checkShallow
+                        : cat.check;
+
+            if (bet.length) {
+                html += `<div class="guide-hands">`;
+                html += `<span class="guide-hands-label guide-hands-label--bet">✓ Bet</span>`;
+                html += bet.map(h => `<span class="guide-hand-tag guide-hand-tag--bet">${h}</span>`).join('');
+                html += `</div>`;
+            }
+            if (check.length) {
+                html += `<div class="guide-hands">`;
+                html += `<span class="guide-hands-label guide-hands-label--check">✗ Check</span>`;
+                html += check.map(h => `<span class="guide-hand-tag guide-hand-tag--check">${h}</span>`).join('');
+                html += `</div>`;
+            }
+        } else {
+            const sections = [
+                { key: 'raise', icon: '↑', cls: 'raise', label: 'Raise' },
+                { key: 'call',  icon: '→', cls: 'call',  label: 'Call'  },
+                { key: 'fold',  icon: '✗', cls: 'fold',  label: 'Fold'  },
+            ];
+            for (const { key, icon, cls, label } of sections) {
+                if (cat[key] && cat[key].length) {
+                    html += `<div class="guide-hands">`;
+                    html += `<span class="guide-hands-label guide-hands-label--${cls}">${icon} ${label}</span>`;
+                    html += cat[key].map(h => `<span class="guide-hand-tag guide-hand-tag--${cls}">${h}</span>`).join('');
+                    html += `</div>`;
+                }
+            }
+        }
+
+        html += `</div>`;
+    }
+
+    html += `</div>`;
+    return html;
 }
