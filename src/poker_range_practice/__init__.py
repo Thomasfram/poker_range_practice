@@ -16,6 +16,7 @@ from .poker_hands import (
     generate_all_hands,
     find_closest_hand_in_range,
     find_bottom_of_range_category,
+    pick_boundary_hand,
     Hand,
 )
 from .range_manager import RangeManager
@@ -197,7 +198,7 @@ def create_app() -> FastAPI:
         if current_range is None:
             raise HTTPException(status_code=400, detail="No active practice session")
 
-        hand = random.choice(_all_hands)
+        hand = pick_boundary_hand(current_range, _all_hands)
         return {"hand": str(hand)}
 
     @app.post("/api/check-answer")
@@ -467,6 +468,10 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=400, detail="No scenarios available")
         scenario = random.choice(scenarios)
 
+        scenario_range = _range_manager.get_range(
+            combo['position'], scenario['action'], combo['stack_depth']
+        ) or {}
+
         hand = None
         parent_open = scenario.get('parent_open')
         if parent_open:
@@ -475,9 +480,9 @@ def create_app() -> FastAPI:
             if parent_range:
                 opened_hands = [h for h, act in parent_range.items() if act != 'fold']
                 if opened_hands:
-                    hand = random.choice(opened_hands)
+                    hand = pick_boundary_hand(scenario_range, opened_hands)
         if hand is None:
-            hand = random.choice(_all_hands)
+            hand = pick_boundary_hand(scenario_range, _all_hands)
 
         return {
             "hand": str(hand),

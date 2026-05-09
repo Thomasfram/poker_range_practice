@@ -2,6 +2,9 @@
 Poker hand representation and range expansion logic.
 """
 
+import random
+
+
 class Hand:
     """Represents a poker starting hand."""
     
@@ -314,6 +317,53 @@ def find_bottom_of_range_category(hand, range_hands):
         bottom = min(candidates, key=lambda h: Hand.RANK_VALUES[h.rank2])
         
     return bottom
+
+
+def pick_boundary_hand(current_range: dict, hand_pool: list, window: int = 2) -> "Hand":
+    """
+    Return a hand near an action boundary in current_range.
+
+    For each category (same rank1 + suitedness, or pairs), hands are sorted by
+    rank2 ascending. Any consecutive pair whose actions differ is a boundary.
+    Hands within `window` steps of any boundary are collected; one is picked at random.
+    Falls back to random from hand_pool when no boundaries exist.
+    """
+    if not current_range or not hand_pool:
+        return random.choice(hand_pool)
+
+    def hand_action(h):
+        return current_range.get(h, "fold")
+
+    boundary_hands: list = []
+    seen: set = set()
+
+    categories: dict = {}
+    for h in hand_pool:
+        key = ("pair",) if h.is_pair else (h.rank1, h.is_suited)
+        categories.setdefault(key, []).append(h)
+
+    for key, hands in categories.items():
+        if key == ("pair",):
+            sorted_hands = sorted(hands, key=lambda h: Hand.RANK_VALUES[h.rank1])
+        else:
+            sorted_hands = sorted(hands, key=lambda h: Hand.RANK_VALUES[h.rank2])
+
+        actions = [hand_action(h) for h in sorted_hands]
+
+        for i in range(len(sorted_hands) - 1):
+            if actions[i] != actions[i + 1]:
+                lo = max(0, i - window + 1)
+                hi = min(len(sorted_hands), i + window + 1)
+                for j in range(lo, hi):
+                    h = sorted_hands[j]
+                    if h not in seen:
+                        seen.add(h)
+                        boundary_hands.append(h)
+
+    if not boundary_hands:
+        return random.choice(hand_pool)
+
+    return random.choice(boundary_hands)
 
 
 if __name__ == "__main__":
