@@ -5,6 +5,7 @@ let stats = {
 };
 
 let evalMode = false;
+let preflopGuideMode = false;
 
 let currentConfig = {
     position: null,
@@ -53,6 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupEventListeners() {
     document.getElementById('mode-classic').addEventListener('click', () => setMode('classic'));
     document.getElementById('mode-eval').addEventListener('click',   () => setMode('eval'));
+    document.getElementById('mode-guide').addEventListener('click',  () => setMode('guide'));
+    document.getElementById('preflop-guide-back-btn').addEventListener('click', () => {
+        document.getElementById('preflop-guide-screen').classList.remove('active');
+        configScreen.classList.add('active');
+    });
     positionSelect.addEventListener('change', onPositionChange);
     actionSelect.addEventListener('change', onActionChange);
     stackDepthSelect.addEventListener('change', onStackDepthChange);
@@ -70,18 +76,25 @@ function setupEventListeners() {
 
 function setMode(mode) {
     evalMode = mode === 'eval';
-    document.getElementById('mode-classic').classList.toggle('active', !evalMode);
-    document.getElementById('mode-eval').classList.toggle('active', evalMode);
+    preflopGuideMode = mode === 'guide';
 
-    // Classic-only controls
-    document.getElementById('classic-position-group').style.display = evalMode ? 'none' : '';
-    document.getElementById('classic-depth-group').style.display    = evalMode ? 'none' : '';
-    actionFormGroup.style.display = evalMode ? 'none' : '';
+    document.getElementById('mode-classic').classList.toggle('active', mode === 'classic');
+    document.getElementById('mode-eval').classList.toggle('active', mode === 'eval');
+    document.getElementById('mode-guide').classList.toggle('active', mode === 'guide');
+
+    // Classic + Guide use the same dropdown controls
+    const classicLike = mode === 'classic' || mode === 'guide';
+    document.getElementById('classic-position-group').style.display = classicLike ? '' : 'none';
+    document.getElementById('classic-depth-group').style.display    = classicLike ? '' : 'none';
+    actionFormGroup.style.display = classicLike ? '' : 'none';
 
     // Eval-only controls
     document.getElementById('eval-position-group').style.display = evalMode ? '' : 'none';
     document.getElementById('eval-depth-group').style.display    = evalMode ? '' : 'none';
     document.getElementById('eval-count-group').style.display    = evalMode ? '' : 'none';
+
+    // Button label changes in guide mode
+    startBtn.textContent = preflopGuideMode ? 'Voir la Range →' : 'Start Practice';
 
     // Reset classic selects
     positionSelect.value = '';
@@ -244,6 +257,7 @@ function onStackDepthChange() {
 }
 
 async function startPractice() {
+    if (preflopGuideMode) { showPreflopGuide(); return; }
     currentConfig.position   = evalMode ? null : positionSelect.value;
     currentConfig.action     = evalMode ? null : actionSelect.value;
     currentConfig.stackDepth = evalMode ? null : stackDepthSelect.value;
@@ -300,21 +314,22 @@ async function startPractice() {
 }
 
 const ACTION_COLORS = {
-    'in_range': '#28a745',
-    'open':     '#28a745',
-    '3bet':     '#d9534f',
-    '4bet':     '#d9534f',
-    'call':     '#5bc0de',
-    'limp':     '#f0ad4e',
-    'check':    '#f0ad4e',
-    'raise':    '#d9534f',
-    'fold':     '#dc3545',
-    'default':  '#6c757d',
+    'in_range':    '#28a745',
+    'open':        '#28a745',
+    '3bet':        '#d9534f',
+    '3bet_light':  '#e8901a',
+    '4bet':        '#8e44ad',
+    'call':        '#2980b9',
+    'limp':        '#f0ad4e',
+    'check':       '#f0ad4e',
+    'raise':       '#d9534f',
+    'raise_allin': '#8e44ad',
+    'fold':        '#aaa',
+    'default':     '#6c757d',
 };
 
 function getActionColor(action) {
-    const base = action.split('_')[0];
-    return ACTION_COLORS[base] || ACTION_COLORS[action] || ACTION_COLORS['default'];
+    return ACTION_COLORS[action] || ACTION_COLORS[action.split('_')[0]] || ACTION_COLORS['default'];
 }
 
 function getActionLabel(action) {
@@ -579,9 +594,81 @@ function retryEval() {
 function backToMenu() {
     practiceScreen.classList.remove('active');
     document.getElementById('results-screen').classList.remove('active');
+    document.getElementById('preflop-guide-screen').classList.remove('active');
     configScreen.classList.add('active');
     feedbackDiv.classList.add('hidden');
     nextBtn.style.display = 'none';
     nextBtn.textContent = 'Next Hand →';
     nextBtn.onclick = loadNextHand;
+}
+
+// ─── Preflop Guide / Range Matrix ────────────
+
+const MATRIX_RANKS = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+
+async function showPreflopGuide() {
+    const position   = positionSelect.value;
+    const action     = actionSelect.value;
+    const stackDepth = stackDepthSelect.value;
+    const actionLabel = actionSelect.options[actionSelect.selectedIndex].textContent;
+
+    try {
+        const url = `/api/range-matrix?position=${encodeURIComponent(position)}&action=${encodeURIComponent(action)}&stack_depth=${encodeURIComponent(stackDepth)}`;
+        const data = await fetch(url).then(r => r.json());
+
+        document.getElementById('preflop-guide-title').textContent =
+            `${position} — ${actionLabel} — ${stackDepth}`;
+        document.getElementById('preflop-guide-content').innerHTML =
+            renderRangeMatrix(data.range, data.available_actions);
+
+        configScreen.classList.remove('active');
+        document.getElementById('preflop-guide-screen').classList.add('active');
+    } catch (e) {
+        console.error('Error loading range matrix:', e);
+    }
+}
+
+function renderRangeMatrix(range, availableActions) {
+    // Legend
+    const activeActions = availableActions.filter(a => a !== 'fold');
+    let html = '<div class="matrix-legend">';
+    activeActions.forEach(a => {
+        html += `<span class="matrix-legend-item" style="background:${getActionColor(a)}">${getActionLabel(a)}</span>`;
+    });
+    html += `<span class="matrix-legend-item matrix-legend-fold">Fold / hors range</span>`;
+    html += '</div>';
+
+    // Stats: how many hands per action
+    const counts = {};
+    Object.values(range).forEach(a => { counts[a] = (counts[a] || 0) + 1; });
+    const inCount = Object.entries(counts)
+        .filter(([a]) => a !== 'fold')
+        .reduce((s, [, n]) => s + n, 0);
+    html += `<p class="matrix-stats">${inCount} combos en range</p>`;
+
+    // 13×13 table
+    html += '<div class="matrix-wrap"><table class="range-matrix"><tbody>';
+
+    MATRIX_RANKS.forEach((rowR, i) => {
+        html += `<tr>`;
+        MATRIX_RANKS.forEach((colR, j) => {
+            let hand;
+            if (i === j)      hand = `${rowR}${rowR}`;
+            else if (i < j)   hand = `${rowR}${colR}s`;
+            else               hand = `${colR}${rowR}o`;
+
+            const action = range[hand] || 'fold';
+            const isFold = action === 'fold';
+            const bg     = isFold ? '' : `background:${getActionColor(action)};`;
+            const cls    = isFold ? 'matrix-cell matrix-cell--fold' : 'matrix-cell matrix-cell--in';
+
+            // Suited upper-right diagonal gets italic style hint
+            const suitedCls = (i < j) ? ' matrix-cell--s' : (i > j) ? ' matrix-cell--o' : ' matrix-cell--p';
+            html += `<td class="${cls}${suitedCls}" style="${bg}" title="${hand}: ${action}">${hand}</td>`;
+        });
+        html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    return html;
 }

@@ -1723,3 +1723,87 @@ label {
 .guide-hand-tag--raise { background: #d4edda; color: #155724; }
 .guide-hand-tag--call  { background: #fff3cd; color: #856404; }
 .guide-hand-tag--fold  { background: #f8d7da; color: #721c24; }
+
+/* ═══════════════════════════════════════════
+   RANGE MATRIX (preflop guide)
+═══════════════════════════════════════════ */
+
+.matrix-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.matrix-legend-item {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 10px;
+    color: white;
+}
+
+.matrix-legend-fold {
+    background: #ccc;
+    color: #555;
+}
+
+.matrix-stats {
+    font-size: 0.78rem;
+    color: #888;
+    margin-bottom: 10px;
+    font-style: italic;
+}
+
+.matrix-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.range-matrix {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    font-size: 7.5px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+}
+
+.range-matrix td {
+    padding: 0;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid rgba(0,0,0,0.08);
+    height: 28px;
+    white-space: nowrap;
+}
+
+.matrix-cell {
+    cursor: default;
+    transition: filter 0.1s;
+}
+
+.matrix-cell:hover {
+    filter: brightness(1.15);
+    z-index: 1;
+    position: relative;
+}
+
+.matrix-cell--fold {
+    background: #f3f3f3;
+    color: #ccc;
+}
+
+.matrix-cell--in {
+    color: rgba(255,255,255,0.95);
+}
+
+/* Pairs get a slightly bolder border */
+.matrix-cell--p {
+    border: 1px solid rgba(0,0,0,0.18);
+}
+
+/* Suited (upper right) vs offsuit (lower left) — subtle italic hint */
+.matrix-cell--s {
+    font-style: italic;
+}

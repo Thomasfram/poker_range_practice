@@ -46,6 +46,7 @@
                         <div class="mode-toggle">
                             <button class="mode-btn active" id="mode-classic" data-mode="classic">Classique</button>
                             <button class="mode-btn" id="mode-eval" data-mode="eval">Évaluation</button>
+                            <button class="mode-btn" id="mode-guide" data-mode="guide">Guide</button>
                         </div>
                     </div>
 
@@ -132,6 +133,17 @@
                     <div class="actions">
                         <button class="btn btn-secondary" id="back-btn">← Back to Menu</button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Preflop Guide / Range Matrix Screen -->
+            <div id="preflop-guide-screen" class="screen">
+                <div class="guide-card">
+                    <div class="guide-topbar">
+                        <button class="btn btn-secondary" id="preflop-guide-back-btn">← Retour</button>
+                        <div class="guide-title-bar" id="preflop-guide-title"></div>
+                    </div>
+                    <div id="preflop-guide-content"></div>
                 </div>
             </div>
 

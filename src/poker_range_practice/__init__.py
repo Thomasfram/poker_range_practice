@@ -522,6 +522,15 @@ def create_app() -> FastAPI:
                 response["closest_hand"] = str(closest)
         return response
 
+    @app.get("/api/range-matrix")
+    def get_range_matrix(position: str, action: str, stack_depth: str):
+        range_data = _range_manager.get_range(position, action, stack_depth)
+        if range_data is None:
+            raise HTTPException(status_code=404, detail="Range not found")
+        available_actions = _range_manager.get_available_range_actions(position, action, stack_depth)
+        result = {str(h): range_data.get(h, "fold") for h in _all_hands}
+        return {"range": result, "available_actions": available_actions}
+
     # Static files mounted last so API routes take precedence
     app.mount("/", StaticFiles(directory=str(_base_dir / "static"), html=True), name="static")
 
