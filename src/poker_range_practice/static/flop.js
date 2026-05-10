@@ -1351,7 +1351,7 @@ FLOP_GUIDE_DATA['BB/CO'] = FLOP_GUIDE_DATA['BB/BTN'];
 // SB vs BB raise — BvB hors position
 FLOP_GUIDE_DATA['SB/BB'] = {
     type: 'cbet',
-    note: 'BvB — vous avez raise en SB, BB a suivi. Vous êtes HOP.',
+    note: 'BvB — vous avez raise en SB, BB a suivi. Vous êtes OOP.',
     cats: [
         {
             label: 'Bas connecté', color: 'red',
@@ -1416,7 +1416,7 @@ FLOP_GUIDE_DATA['SB/BB'] = {
 // SB vs BB limp — BvB hors position
 FLOP_GUIDE_DATA['SB/BB_limp'] = {
     type: 'cbet',
-    note: 'BvB — vous avez limp en SB, BB a check. Vous êtes HOP.',
+    note: 'BvB — vous avez limp en SB, BB a check. Vous êtes OOP.',
     cats: [
         {
             label: 'Pairé low (2-6)', color: 'red',
