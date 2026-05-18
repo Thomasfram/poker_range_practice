@@ -1471,9 +1471,11 @@ FLOP_GUIDE_DATA['SB/BB_limp'] = {
     ],
 };
 
+// ─── Guide Navigation State ───────────────────
+const guideState = { sitKey: null, depth: null };
+
 function showFlopGuide(configScr) {
     const { hero, villain, stackDepth, scenario } = flopState;
-    const depth = stackDepth.value;
 
     let key;
     if (hero === 'SB' && villain === 'BB') {
@@ -1482,18 +1484,64 @@ function showFlopGuide(configScr) {
         key = `${hero}/${villain}`;
     }
 
-    const data = FLOP_GUIDE_DATA[key];
-    if (!data) return;
+    if (!FLOP_GUIDE_DATA[key]) return;
 
-    const typeLabel = data.type === 'defense' ? 'Défense' : 'C-Bet';
-    const sitLabel = (hero === 'SB' && villain === 'BB' && scenario)
-        ? `SB vs BB (${scenario === 'limp' ? 'SB Limp' : 'SB Raise'})`
-        : `${hero} vs ${villain}`;
-    document.getElementById('guide-title').textContent = `${typeLabel} · ${sitLabel} — ${stackDepth.label}`;
-    document.getElementById('guide-content').innerHTML = renderGuideContent(data, depth);
+    guideState.sitKey = key;
+    guideState.depth  = stackDepth.value;
+
+    renderGuideNav();
+    updateGuideContent();
 
     configScr.classList.remove('active');
     document.getElementById('flop-guide-screen').classList.add('active');
+}
+
+function renderGuideNav() {
+    const availableSits = FLOP_EVAL_SITUATIONS.filter(s => FLOP_GUIDE_DATA[s.key]);
+
+    const sitContainer = document.getElementById('guide-nav-situations');
+    sitContainer.innerHTML = '';
+    availableSits.forEach(sit => {
+        const btn = document.createElement('button');
+        btn.className = 'guide-nav-btn' + (sit.key === guideState.sitKey ? ' active' : '');
+        btn.textContent = sit.label;
+        btn.addEventListener('click', () => {
+            guideState.sitKey = sit.key;
+            sitContainer.querySelectorAll('.guide-nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateGuideContent();
+        });
+        sitContainer.appendChild(btn);
+    });
+
+    const depthContainer = document.getElementById('guide-nav-depths');
+    depthContainer.innerHTML = '';
+    STACK_DEPTHS.forEach(sd => {
+        const btn = document.createElement('button');
+        btn.className = 'guide-nav-btn' + (sd.value === guideState.depth ? ' active' : '');
+        btn.textContent = sd.label;
+        btn.addEventListener('click', () => {
+            guideState.depth = sd.value;
+            depthContainer.querySelectorAll('.guide-nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateGuideContent();
+        });
+        depthContainer.appendChild(btn);
+    });
+}
+
+function updateGuideContent() {
+    const data = FLOP_GUIDE_DATA[guideState.sitKey];
+    if (!data) return;
+
+    const sit = FLOP_EVAL_SITUATIONS.find(s => s.key === guideState.sitKey);
+    const sd  = STACK_DEPTHS.find(s => s.value === guideState.depth);
+
+    const typeLabel = data.type === 'defense' ? 'Défense' : 'C-Bet';
+    const sitLabel  = sit ? sit.label : guideState.sitKey;
+    document.getElementById('guide-title').textContent =
+        `${typeLabel} · ${sitLabel} — ${sd ? sd.label : guideState.depth + 'bb'}`;
+    document.getElementById('guide-content').innerHTML = renderGuideContent(data, guideState.depth);
 }
 
 function renderGuideContent(data, depth) {
