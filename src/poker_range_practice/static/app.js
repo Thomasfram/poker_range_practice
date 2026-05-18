@@ -82,19 +82,19 @@ function setMode(mode) {
     document.getElementById('mode-eval').classList.toggle('active', mode === 'eval');
     document.getElementById('mode-guide').classList.toggle('active', mode === 'guide');
 
-    // Classic + Guide use the same dropdown controls
-    const classicLike = mode === 'classic' || mode === 'guide';
-    document.getElementById('classic-position-group').style.display = classicLike ? '' : 'none';
-    document.getElementById('classic-depth-group').style.display    = classicLike ? '' : 'none';
-    actionFormGroup.style.display = classicLike ? '' : 'none';
+    // Only classic shows config controls; guide auto-opens its own screen
+    document.getElementById('classic-position-group').style.display = mode === 'classic' ? '' : 'none';
+    document.getElementById('classic-depth-group').style.display    = mode === 'classic' ? '' : 'none';
+    actionFormGroup.style.display = mode === 'classic' ? '' : 'none';
 
     // Eval-only controls
     document.getElementById('eval-position-group').style.display = evalMode ? '' : 'none';
     document.getElementById('eval-depth-group').style.display    = evalMode ? '' : 'none';
     document.getElementById('eval-count-group').style.display    = evalMode ? '' : 'none';
 
-    // Button label changes in guide mode
-    startBtn.textContent = preflopGuideMode ? 'Voir la Range →' : 'Start Practice';
+    // Start button: hidden in guide mode (guide opens immediately)
+    startBtn.style.display = preflopGuideMode ? 'none' : '';
+    startBtn.textContent   = 'Start Practice';
 
     // Reset classic selects
     positionSelect.value = '';
@@ -113,6 +113,7 @@ function setMode(mode) {
     document.getElementById('eval-depths-buttons').innerHTML = '';
 
     if (evalMode) loadEvalPositions();
+    if (preflopGuideMode) autoOpenPreflopGuide();
 }
 
 async function loadPositions() {
@@ -606,23 +607,119 @@ function backToMenu() {
 
 const MATRIX_RANKS = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
 
-async function showPreflopGuide() {
-    const position   = positionSelect.value;
-    const action     = actionSelect.value;
-    const stackDepth = stackDepthSelect.value;
-    const actionLabel = actionSelect.options[actionSelect.selectedIndex].textContent;
+const preflopGuideState = { position: null, action: null, stackDepth: null };
 
+async function autoOpenPreflopGuide() {
+    try {
+        const positions = await fetch('/api/positions').then(r => r.json());
+        if (!positions.length) return;
+        if (!positions.includes(preflopGuideState.position)) {
+            preflopGuideState.position   = positions[0];
+            preflopGuideState.action     = null;
+            preflopGuideState.stackDepth = null;
+        }
+        await renderPreflopGuideNav();
+        await updatePreflopGuideContent();
+        configScreen.classList.remove('active');
+        document.getElementById('preflop-guide-screen').classList.add('active');
+    } catch (e) {
+        console.error('Error opening preflop guide:', e);
+    }
+}
+
+async function showPreflopGuide() {
+    preflopGuideState.position   = positionSelect.value;
+    preflopGuideState.action     = actionSelect.value;
+    preflopGuideState.stackDepth = stackDepthSelect.value;
+
+    await renderPreflopGuideNav();
+    await updatePreflopGuideContent();
+
+    configScreen.classList.remove('active');
+    document.getElementById('preflop-guide-screen').classList.add('active');
+}
+
+async function renderPreflopGuideNav() {
+    const positions = await fetch('/api/positions').then(r => r.json());
+    const posCont   = document.getElementById('preflop-nav-positions');
+    posCont.innerHTML = '';
+    positions.forEach(pos => {
+        const btn = document.createElement('button');
+        btn.className = 'guide-nav-btn' + (pos === preflopGuideState.position ? ' active' : '');
+        btn.textContent = pos;
+        btn.addEventListener('click', async () => {
+            preflopGuideState.position = pos;
+            posCont.querySelectorAll('.guide-nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            await updatePreflopGuideActions();
+        });
+        posCont.appendChild(btn);
+    });
+    await updatePreflopGuideActions();
+}
+
+async function updatePreflopGuideActions() {
+    const actions  = await fetch(`/api/actions/${preflopGuideState.position}`).then(r => r.json());
+    const actCont  = document.getElementById('preflop-nav-actions');
+    actCont.innerHTML = '';
+
+    const actionValues = actions.map(a => a.value);
+    if (!actionValues.includes(preflopGuideState.action)) {
+        preflopGuideState.action = actionValues[0] || null;
+    }
+
+    actions.forEach(({ value, label }) => {
+        const btn = document.createElement('button');
+        btn.className = 'guide-nav-btn' + (value === preflopGuideState.action ? ' active' : '');
+        btn.textContent = label;
+        btn.addEventListener('click', async () => {
+            preflopGuideState.action = value;
+            actCont.querySelectorAll('.guide-nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            await updatePreflopGuideDepths();
+        });
+        actCont.appendChild(btn);
+    });
+    await updatePreflopGuideDepths();
+}
+
+async function updatePreflopGuideDepths() {
+    if (!preflopGuideState.action) return;
+    const depths   = await fetch(`/api/stack-depths/${preflopGuideState.position}/${preflopGuideState.action}`).then(r => r.json());
+    const depthCont = document.getElementById('preflop-nav-depths');
+    depthCont.innerHTML = '';
+
+    if (!depths.includes(preflopGuideState.stackDepth)) {
+        preflopGuideState.stackDepth = depths[0] || null;
+    }
+
+    depths.forEach(d => {
+        const btn = document.createElement('button');
+        btn.className = 'guide-nav-btn' + (d === preflopGuideState.stackDepth ? ' active' : '');
+        btn.textContent = d;
+        btn.addEventListener('click', async () => {
+            preflopGuideState.stackDepth = d;
+            depthCont.querySelectorAll('.guide-nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            await updatePreflopGuideContent();
+        });
+        depthCont.appendChild(btn);
+    });
+    await updatePreflopGuideContent();
+}
+
+async function updatePreflopGuideContent() {
+    const { position, action, stackDepth } = preflopGuideState;
+    if (!position || !action || !stackDepth) return;
     try {
         const url = `/api/range-matrix?position=${encodeURIComponent(position)}&action=${encodeURIComponent(action)}&stack_depth=${encodeURIComponent(stackDepth)}`;
         const data = await fetch(url).then(r => r.json());
 
+        const actionLabel = document.querySelector('#preflop-nav-actions .guide-nav-btn.active')?.textContent || action;
         document.getElementById('preflop-guide-title').textContent =
             `${position} — ${actionLabel} — ${stackDepth}`;
         document.getElementById('preflop-guide-content').innerHTML =
             renderRangeMatrix(data.range, data.available_actions);
-
-        configScreen.classList.remove('active');
-        document.getElementById('preflop-guide-screen').classList.add('active');
     } catch (e) {
         console.error('Error loading range matrix:', e);
     }

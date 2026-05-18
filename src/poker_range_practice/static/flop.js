@@ -204,13 +204,7 @@ function updateFlopSummary() {
 function updateFlopStartBtn() {
     const btn = document.getElementById('flop-start-btn');
     if (!btn) return;
-    if (flopGuideMode) {
-        btn.textContent = 'Voir le Guide →';
-        const { hero, villain, stackDepth, scenario } = flopState;
-        const needsScenario = hero === 'SB' && villain === 'BB';
-        btn.disabled = !hero || !villain || !stackDepth || hero === villain || (needsScenario && !scenario);
-        return;
-    }
+    btn.style.display = '';
     btn.textContent = 'Start Flop Practice';
     if (flopEval.active) {
         btn.disabled = flopEval.situations.size === 0 || flopEval.depths.size === 0;
@@ -282,6 +276,7 @@ function setFlopMode(evalMode) {
     document.getElementById('flop-mode-guide').classList.remove('active');
     document.getElementById('flop-classic-config').style.display = evalMode ? 'none' : '';
     document.getElementById('flop-eval-config').style.display    = evalMode ? '' : 'none';
+    document.getElementById('flop-start-btn').style.display = '';
 
     // Reset eval state
     flopEval.situations.clear();
@@ -299,9 +294,25 @@ function setFlopGuideMode() {
     document.getElementById('flop-mode-classic').classList.remove('active');
     document.getElementById('flop-mode-eval').classList.remove('active');
     document.getElementById('flop-mode-guide').classList.add('active');
-    document.getElementById('flop-classic-config').style.display = '';
+    document.getElementById('flop-classic-config').style.display = 'none';
     document.getElementById('flop-eval-config').style.display = 'none';
-    updateFlopStartBtn();
+    document.getElementById('flop-start-btn').style.display = 'none';
+    autoOpenFlopGuide();
+}
+
+function autoOpenFlopGuide() {
+    if (!FLOP_GUIDE_DATA[guideState.sitKey]) {
+        const first = FLOP_EVAL_SITUATIONS.find(s => FLOP_GUIDE_DATA[s.key]);
+        if (!first) return;
+        guideState.sitKey = first.key;
+    }
+    if (!STACK_DEPTHS.find(s => s.value === guideState.depth)) {
+        guideState.depth = 50;
+    }
+    renderGuideNav();
+    updateGuideContent();
+    document.getElementById('flop-config-screen').classList.remove('active');
+    document.getElementById('flop-guide-screen').classList.add('active');
 }
 
 // ─── Navigation ──────────────────────────────
